@@ -243,9 +243,17 @@ class _InvoiceState extends State<Invoice> {
                 alignment: Alignment.center,
                 child: ElevatedButton(
                     onPressed: () {
-                      nextScreen(context, PDFExample());
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(const SnackBar(content: Text("")));
                     },
                     child: const Text("Pay Advancce"))),
+            Align(
+                alignment: Alignment.center,
+                child: ElevatedButton(
+                    onPressed: () {
+                      nextScreen(context, const PdfGeneratorPage());
+                    },
+                    child: const Text("Download"))),
             height(20),
           ],
         )),
