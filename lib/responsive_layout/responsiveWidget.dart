@@ -1,7 +1,6 @@
-import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
-class ResponsiveLayout {
+class ResponsiveForm {
   static const mobileSize = 400;
   static Widget responsiveForm(
       {required List<Widget> children,

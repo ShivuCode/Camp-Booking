@@ -1,5 +1,8 @@
-import 'package:camp_booking/page/homePage.dart';
-import 'package:camp_booking/page/loginPage.dart';
+import 'package:camp_booking/page/Home/laptopHomeScreen.dart';
+import 'package:camp_booking/page/Home/mobileHomeScreen.dart';
+import 'package:camp_booking/page/Home/tabletHomeScreen.dart';
+import 'package:camp_booking/responsive_layout/responsive_layout.dart';
+import 'package:camp_booking/page/LOGIN/loginPage.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,10 +22,11 @@ class MyApp extends StatelessWidget {
       return false;
     }
   }
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return  FutureBuilder<bool>(
+    return FutureBuilder<bool>(
       future: checkLoginStatus(),
       builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -38,10 +42,12 @@ class MyApp extends StatelessWidget {
         } else {
           if (snapshot.hasData && snapshot.data!) {
             // User is already logged in, redirect to BookingPage
-            return const  MaterialApp(
-              debugShowCheckedModeBanner: false,
-              home: HomeScreen(),
-            );
+            return MaterialApp(
+                debugShowCheckedModeBanner: false,
+                home: ResponsiveLayout(
+                    mobileScaffold: MobileHomeScreen(),
+                    tabletScaffold: TabletHomeScreen(),
+                    laptopScaffold: LaptopHomeScreen()));
           } else {
             // User is not logged in, show the login page
             return const MaterialApp(

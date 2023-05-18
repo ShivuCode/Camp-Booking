@@ -47,5 +47,8 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<array>
+	<string>mailto</string>
+	</array>
 </dict>
 </plist>

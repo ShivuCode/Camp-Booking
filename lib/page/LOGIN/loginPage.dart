@@ -1,9 +1,11 @@
-import 'dart:convert';
-import 'package:camp_booking/page/homePage.dart';
+import 'package:camp_booking/api_service/ApiService.dart';
+import 'package:camp_booking/page/HOME/laptopHomeScreen.dart';
+import 'package:camp_booking/page/HOME/mobileHomeScreen.dart';
+import 'package:camp_booking/page/HOME/tabletHomeScreen.dart';
+import 'package:camp_booking/responsive_layout/responsive_layout.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
-import '../constants/constant.dart';
+
+import 'package:camp_booking/constant.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -17,29 +19,6 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
   bool isLoad = false;
-
-  void loginUser() async {
-    if (email.text.isNotEmpty && password.text.isNotEmpty) {
-      final response = await http.post(
-        Uri.parse('https://jobmanagementw.onrender.com/api/user/login'),
-        body: {
-          'email': email.text,
-          'password': password.text,
-        },
-      );
-      var jsonResponse = jsonDecode(response.body);
-      if (response.statusCode == 200) {
-        var myToken = jsonResponse['token'];
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        prefs.setString('token', myToken);
-        setState(() {
-          isLoad = false;
-        });
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (_) => const HomeScreen()));
-      } else {}
-    }
-  }
 
   @override
   void initState() {
@@ -109,13 +88,13 @@ class _LoginPageState extends State<LoginPage> {
                         minimumSize: const Size(350, 60),
                         backgroundColor: Colors.deepPurpleAccent,
                         foregroundColor: Colors.white),
-                    onPressed: () {
+                    onPressed: () async {
                       if (_formKey.currentState!.validate()) {
                         _formKey.currentState!.save();
                         setState(() {
                           isLoad = true;
                         });
-                        loginUser();
+                        Auth.loginUser(context, email.text, password.text);
                       }
                     },
                     child: const Text("Sign In"),
