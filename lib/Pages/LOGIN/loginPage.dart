@@ -1,8 +1,8 @@
-import 'package:camp_booking/api_service/ApiService.dart';
-import 'package:camp_booking/page/HOME/laptopHomeScreen.dart';
-import 'package:camp_booking/page/HOME/mobileHomeScreen.dart';
-import 'package:camp_booking/page/HOME/tabletHomeScreen.dart';
-import 'package:camp_booking/responsive_layout/responsive_layout.dart';
+import 'package:camp_booking/Services/ApiService.dart';
+import 'package:camp_booking/Pages/HOME/laptopHomeScreen.dart';
+import 'package:camp_booking/Pages/HOME/mobileHomeScreen.dart';
+import 'package:camp_booking/Pages/HOME/tabletHomeScreen.dart';
+import 'package:camp_booking/Responsive_Layout/responsive_layout.dart';
 import 'package:flutter/material.dart';
 
 import 'package:camp_booking/constant.dart';

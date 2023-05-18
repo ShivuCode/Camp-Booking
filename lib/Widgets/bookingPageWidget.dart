@@ -1,15 +1,15 @@
 import 'dart:async';
-import 'package:camp_booking/api_service/ApiService.dart';
-import 'package:camp_booking/model/invoice_model.dart';
-import 'package:camp_booking/page/INVOICE/laptopInvoice.dart';
-import 'package:camp_booking/page/INVOICE/mobileInvoice.dart';
-import 'package:camp_booking/page/INVOICE/tabletInvoice.dart';
-import 'package:camp_booking/responsive_layout/responsiveWidget.dart';
-import 'package:camp_booking/widget/invoicePageWidget.dart';
-import 'package:camp_booking/responsive_layout/responsive_layout.dart';
+
+import 'package:camp_booking/Pages/INVOICE/laptopInvoice.dart';
+import 'package:camp_booking/Pages/INVOICE/mobileInvoice.dart';
+import 'package:camp_booking/Pages/INVOICE/tabletInvoice.dart';
+import 'package:camp_booking/Responsive_Layout/responsiveWidget.dart';
+import 'package:camp_booking/Responsive_Layout/responsive_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:camp_booking/constant.dart';
+import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:url_launcher/url_launcher.dart';
+// import 'package:flutter_email_sender/flutter_email_sender.dart';
 
 // ignore: must_be_immutable
 class BookingPage extends StatefulWidget {
@@ -52,6 +52,7 @@ class _BookingPageState extends State<BookingPage> {
     adult.text = "0";
     child.text = "0";
     totalAmt.text = "0";
+    advanceAmt.text = "0";
   }
 
   @override
@@ -59,7 +60,8 @@ class _BookingPageState extends State<BookingPage> {
     double size = MediaQuery.of(context).size.width;
     return Scaffold(
       body: Padding(
-        padding: EdgeInsets.all(size < 600 ? 20 : 50),
+        padding: EdgeInsets.symmetric(
+            horizontal: size < 600 ? 20 : 50, vertical: 20),
         child: SingleChildScrollView(
           child: Form(
             key: _formKey,
@@ -265,8 +267,7 @@ class _BookingPageState extends State<BookingPage> {
                       fieldTitle("Ticket Flag"),
                       TextFormField(
                         style: const TextStyle(color: Colors.black),
-                        controller: adult,
-                        onChanged: (v) => total(),
+                        controller: ticketFlag,
                         keyboardType: TextInputType.text,
                         decoration: fieldDec("flag..."),
                       ),
@@ -278,8 +279,7 @@ class _BookingPageState extends State<BookingPage> {
                       fieldTitle("Advance Amount"),
                       TextFormField(
                         style: const TextStyle(color: Colors.black),
-                        controller: adult,
-                        onChanged: (v) => total(),
+                        controller: advanceAmt,
                         keyboardType: TextInputType.number,
                         decoration: fieldDec("0"),
                       ),
@@ -317,11 +317,13 @@ class _BookingPageState extends State<BookingPage> {
                       "foodType": foodType.text,
                       "adult": adult.text,
                       "child": child.text,
-                      "total": totalAmt.text
+                      "total": totalAmt.text,
+                      "advance": advanceAmt.text,
                     });
                     // ApiService.sendEmail(
                     //     "Booking confirm", "$details", email.text);
-
+                    sendEmail(context, "Bookin Confirm", details.toString(),
+                        email.text);
                     nextScreen(
                         context,
                         ResponsiveLayout(
@@ -346,7 +348,7 @@ class _BookingPageState extends State<BookingPage> {
     );
   }
 
-  // sendEmail(String subject, String body, String recipientemail) async {
+  // sendEmail(context, String subject, String body, String recipientemail) async {
   //   final Email email = Email(
   //       body: body,
   //       subject: subject,
@@ -354,30 +356,30 @@ class _BookingPageState extends State<BookingPage> {
   //       isHTML: false);
   //   try {
   //     await FlutterEmailSender.send(email);
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(content: Text("Succeffully send email : $email")));
   //   } catch (e) {
-  //     print(e);
+  //     ScaffoldMessenger.of(context)
+  //         .showSnackBar(SnackBar(content: Text("error : $e")));
   //   }
   // }
 
   sendEmail(context, String subject, String body, String recipientmail) async {
-    final Uri params = Uri(
-        scheme: 'mailto',
-        path: 'shivubind4160@gmail.com',
-        query: 'subject=Hello&body=Hello%20World');
+    final Uri params =
+        Uri(scheme: 'mailto', path: 'shivubind4160@gmail.com', query: '$body');
 
     runZoned(() async {
       // your asynchronous code here
       if (await canLaunchUrl(params)) {
         await launchUrl(params);
         ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text("Succeffully send..")));
+            .showSnackBar(SnackBar(content: Text("send:openss")));
       } else {
         throw 'Could not launch $params';
       }
     }, onError: (error, stackTrace) {
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(error)));
-
+          .showSnackBar(SnackBar(content: Text("error : $error")));
       print('Error: $error');
       print(stackTrace);
     });

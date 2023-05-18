@@ -6,9 +6,9 @@ import 'package:pdf/pdf.dart';
 import 'package:http/http.dart' as http;
 import 'package:pdf/widgets.dart';
 import 'package:camp_booking/constant.dart';
-import '../model/customer_model.dart';
-import '../model/invoice_model.dart';
-import '../page/pdfView.dart';
+import '../Models/customer_model.dart';
+import '../Models/invoice_model.dart';
+import '../Pages/pdfView.dart';
 
 class PdfService {
   static Future<void> saveAndOpenPdf(context, invoice, fileName) async {
@@ -43,9 +43,7 @@ class PdfService {
         nextScreen(context, PdfViewer(path: file.path));
 
         // Open the PDF file using the default PDF viewer on the device
-      } catch (e) {
-        print(e);
-      }
+      } catch (e) {}
     }
   }
 

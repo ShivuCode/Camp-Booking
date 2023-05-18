@@ -1,7 +1,9 @@
 import 'package:camp_booking/constant.dart';
-import 'package:camp_booking/widget/bookingPageWidget.dart';
-import 'package:camp_booking/widget/campt.dart';
+
 import 'package:flutter/material.dart';
+
+import '../../Widgets/bookingPageWidget.dart';
+import '../../Widgets/campt.dart';
 
 class LaptopHomeScreen extends StatelessWidget {
   int? pos;

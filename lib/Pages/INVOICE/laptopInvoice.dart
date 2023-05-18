@@ -1,6 +1,8 @@
 import 'package:camp_booking/constant.dart';
-import 'package:camp_booking/widget/invoicePageWidget.dart';
+
 import 'package:flutter/material.dart';
+
+import '../../Widgets/invoicePageWidget.dart';
 
 class LaptopInvoice extends StatelessWidget {
   var details;

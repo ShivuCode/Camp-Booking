@@ -1,8 +1,7 @@
 import 'package:camp_booking/page/Home/laptopHomeScreen.dart';
 import 'package:camp_booking/page/Home/mobileHomeScreen.dart';
 import 'package:camp_booking/page/Home/tabletHomeScreen.dart';
-import 'package:camp_booking/page/BOOKING/bookingPageWidget.dart';
-import 'package:camp_booking/responsive_layout/responsive_layout.dart';
+import 'package:camp_booking/Responsive_Layout/responsive_layout.dart';
 import 'package:flutter/material.dart';
 import '../constant.dart';
 

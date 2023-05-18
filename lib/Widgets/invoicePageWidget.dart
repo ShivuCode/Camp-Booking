@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:http/http.dart'as http;
-import 'package:camp_booking/model/customer_model.dart';
-import 'package:camp_booking/model/invoice_model.dart';
-import 'package:camp_booking/pdf_service/pdf_seervice..dart';
+import 'package:camp_booking/Models/customer_model.dart';
+import 'package:camp_booking/Models/invoice_model.dart';
+import 'package:camp_booking/Services/pdf_seervice..dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:camp_booking/constant.dart';

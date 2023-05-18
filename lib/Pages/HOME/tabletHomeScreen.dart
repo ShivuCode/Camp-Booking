@@ -1,6 +1,6 @@
 import 'package:camp_booking/constant.dart';
-import 'package:camp_booking/widget/bookingPageWidget.dart';
-import 'package:camp_booking/widget/campt.dart';
+import '../../Widgets/bookingPageWidget.dart';
+import '../../Widgets/campt.dart';
 import 'package:flutter/material.dart';
 
 class TabletHomeScreen extends StatelessWidget {
