@@ -7,13 +7,12 @@ import 'package:http/http.dart' as http;
 import 'package:pdf/widgets.dart';
 import 'package:camp_booking/constant.dart';
 import '../Models/customer_model.dart';
-import '../Models/invoice_model.dart';
 import '../Pages/pdfView.dart';
 
 class PdfService {
-  static Future<void> saveAndOpenPdf(context, invoice, fileName) async {
+  static Future<void> saveAndOpenPdf(context, customer, fileName) async {
     // Generate the PDF file
-    final pdfBytes = await generatePdf(invoice);
+    final pdfBytes = await generatePdf(customer);
 
     if (kIsWeb) {
       // String url =
@@ -48,29 +47,29 @@ class PdfService {
   }
 
   // Function to generate the PDF file
-  static Future<List<int>> generatePdf(Invoice invoice) async {
+  static Future<List<int>> generatePdf(Customer customer) async {
     final pdf = Document();
 
     pdf.addPage(MultiPage(
-        header: (context) => builtHeader(invoice),
+        header: (context) => builtTile(customer),
         build: (context) => [
-              builtTile(invoice),
-              builtInvoice(invoice),
+              builtHeader(customer),
+              builtcustomer(customer),
               SizedBox(height: 10),
               Divider(),
               SizedBox(height: 5),
-              builtTotal(invoice.item.first),
+              builtTotal(customer),
             ],
-        footer: (context) => buildFooter(invoice)));
+        footer: (context) => buildFooter(customer)));
 
     return pdf.save();
   }
 
-  static builtHeader(Invoice invoice) =>
+  static builtHeader(Customer customer) =>
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         SizedBox(height: 1 * PdfPageFormat.cm),
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          // builtSupplier(invoice),
+          // builtSupplier(customer),
           Container(
               height: 50,
               width: 50,
@@ -82,22 +81,22 @@ class PdfService {
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              builtCustomer(invoice.customer),
-              builtInvoiceInfo(invoice)
+              builtCustomer(customer),
+              builtcustomerInfo(customer)
             ]),
       ]);
 
-  //built Invoice Information
-  static builtInvoiceInfo(Invoice invoice) {
+  //built customer Information
+  static builtcustomerInfo(Customer customer) {
     final title = [
-      "Invoice Number: ",
-      "Invoice Date: ",
+      "customer Number: ",
+      "customer Date: ",
       "Payment Terms: ",
       "Due Date: "
     ];
     final data = [
       "Id1223230",
-      invoice.customer.date,
+      customer.bookingDate,
       "5 days",
       DateTime.now().toString()
     ];
@@ -117,7 +116,7 @@ class PdfService {
       ]);
 
   // //supplier details
-  // static builtSupplier(Invoice invoice) =>
+  // static builtSupplier(customer customer) =>
   //     Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
   //       Text("suppilerName", style: TextStyle(fontWeight: FontWeight.bold)),
   //       SizedBox(height: 1 * PdfPageFormat.mm),
@@ -126,18 +125,18 @@ class PdfService {
   //     ]);
 
   //heading
-  static builtTile(Invoice invoice) =>
+  static builtTile(Customer customer) =>
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         SizedBox(height: 10),
-        Text("Invoice".toUpperCase(),
+        Text("customer".toUpperCase(),
             style: TextStyle(fontSize: 20, fontBold: Font.courier())),
         SizedBox(height: 10),
         Text("Description"),
         SizedBox(height: 50)
       ]);
 
-//invoice information
-  static builtInvoice(Invoice invoice) {
+//customer information
+  static builtcustomer(Customer customer) {
     final headers = [
       "Item",
       "Price",
@@ -145,15 +144,16 @@ class PdfService {
       "No of Adults & childs",
       "Total Amount"
     ];
-    final data = invoice.item.map((item) {
-      return [
-        item.campName,
-        item.price,
-        item.foodType,
-        '${item.noOfAdult},${item.noOfChild}',
-        ((item.price * item.noOfAdult) + (item.noOfChild * item.noOfChild))
-      ];
-    }).toList();
+    final data =[
+      [
+        "Lonawala",
+        customer.price,
+        '${customer.vegPeopleCount}/${customer.nonVegPeopleCount}',
+        '${customer.adult},${customer.child}',
+        ((customer.price * customer.adult) +
+            ((customer.price / 0.8) * customer.child))
+      ]]
+    ;
     return Table.fromTextArray(
         headers: headers,
         data: data,
@@ -171,10 +171,10 @@ class PdfService {
   }
 
   //built total secton
-  static builtTotal(InvoiceItem invoice) {
-    final total = ((invoice.price * invoice.noOfAdult) +
-        (invoice.price * invoice.noOfChild));
-    final adv = invoice.price / 1.25;
+  static builtTotal(Customer customer) {
+    final total =
+        ((customer.price * customer.adult) + (customer.price * customer.child));
+    final adv = customer.price / 1.25;
     final rem = (total - adv).toStringAsFixed(2);
     return Container(
         child: Row(children: [
@@ -209,7 +209,7 @@ class PdfService {
   }
 
 //create footer of pdf
-  static buildFooter(Invoice invoice) =>
+  static buildFooter(Customer customer) =>
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Divider(),
         SizedBox(height: 10),

@@ -94,7 +94,8 @@ class _LoginPageState extends State<LoginPage> {
                         setState(() {
                           isLoad = true;
                         });
-                        Auth.loginUser(context, email.text, password.text);
+                        ApiService.loginUser(
+                            context, email.text, password.text);
                       }
                     },
                     child: const Text("Sign In"),

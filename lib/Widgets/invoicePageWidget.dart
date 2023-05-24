@@ -1,19 +1,14 @@
-import 'dart:io';
-import 'package:http/http.dart'as http;
 import 'package:camp_booking/Models/customer_model.dart';
-import 'package:camp_booking/Models/invoice_model.dart';
 import 'package:camp_booking/Services/pdf_seervice..dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:camp_booking/constant.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 // ignore: must_be_immutable
 class InvoicePageWidget extends StatefulWidget {
   // ignore: prefer_typing_uninitialized_variables
-  var details;
-  InvoicePageWidget({super.key, required this.details});
+  Customer customer;
+  InvoicePageWidget({super.key, required this.customer});
 
   @override
   State<InvoicePageWidget> createState() => _InvoicePageWidgetState();
@@ -31,8 +26,7 @@ class _InvoicePageWidgetState extends State<InvoicePageWidget> {
   final value = [];
   @override
   void initState() {
-    print(widget.details);
-    super.initState();
+        super.initState();
   }
 
   @override
@@ -72,13 +66,13 @@ class _InvoicePageWidgetState extends State<InvoicePageWidget> {
                         children: [
                           const Text("Customer Details: ",
                               style: TextStyle(fontWeight: FontWeight.bold)),
-                          Text(widget.details["email"],
+                          Text(widget.customer.email,
                               style:
                                   const TextStyle(fontWeight: FontWeight.bold)),
-                          Text(widget.details["name"]),
+                          Text(widget.customer.name),
                           SizedBox(
                             width: size * 0.3,
-                            child: Text('${widget.details["add"]}',
+                            child: Text(widget.customer.address,
                                 softWrap: true),
                           ),
                         ]),
@@ -162,14 +156,14 @@ class _InvoicePageWidgetState extends State<InvoicePageWidget> {
                       alignment: Alignment.center,
                       width: 140,
                       height: 40,
-                      child: Text(widget.details["price"]),
+                      child: Text(widget.customer.price.toString()),
                     )),
                     TableCell(
                         child: Container(
                       alignment: Alignment.center,
                       width: 140,
                       height: 40,
-                      child: Text(widget.details["foodType"]),
+                      child: Text('${widget.customer.vegPeopleCount}/${widget.customer.nonVegPeopleCount}'),
                     )),
                     TableCell(
                         child: Container(
@@ -177,14 +171,14 @@ class _InvoicePageWidgetState extends State<InvoicePageWidget> {
                       width: 140,
                       height: 40,
                       child: Text(
-                          "${widget.details["adult"]},${widget.details["chisld"]}"),
+                          "${widget.customer.adult},${widget.customer.child}"),
                     )),
                     TableCell(
                         child: Container(
                       alignment: Alignment.center,
                       width: 140,
                       height: 40,
-                      child: Text(widget.details["total"]),
+                      child: Text(widget.customer.total.toString()),
                     )),
                   ])
                 ],
@@ -200,10 +194,10 @@ class _InvoicePageWidgetState extends State<InvoicePageWidget> {
                     children: [
                       text(
                           title: "Total Amount",
-                          value: widget.details["total"]),
+                          value: widget.customer.total.toString()),
                       text(
                           title: "Advance Amount",
-                          value: widget.details["advance"]),
+                          value: widget.customer.advAmt.toString()),
                       height(10),
                       const Divider(
                         thickness: 0.4,
@@ -218,8 +212,8 @@ class _InvoicePageWidgetState extends State<InvoicePageWidget> {
                       height(5),
                       text(
                           title: "Remaining",
-                          value: (double.parse(widget.details["total"]) -
-                                  double.parse(widget.details["advance"]))
+                          value: (widget.customer.total -
+                                  double.parse(widget.customer.advAmt.toString()))
                               .toString()),
                       height(5),
                       const Divider(
@@ -280,42 +274,28 @@ class _InvoicePageWidgetState extends State<InvoicePageWidget> {
 
   share(filename) async {
     if (kIsWeb) {
-      String url = "https://www.vnsgu.ac.in/Old%20Question%20Papers/Old%20Question%20Papers/EXAM%20PAPER%20FOR%202020%20YEAR/Science%20-%202019/BCA-2019/B.C.A.%20(Sem-VI)%20-2019/B.C.A.(Sem.VI)%20Examination%20Oct.Nov.-2019%20-%20602-E-Commerce%20&%20Cyber%20Secu..pdf";
-      var response = await http.get(Uri.parse(url));
-  var bytes = response.bodyBytes;
-  var fileName = url.split('/').last;
-  var tempDir = await getTemporaryDirectory();
-  var filePath = '${tempDir.path}/$fileName';
-  File file = File(filePath);
-  await file.writeAsBytes(bytes);
+  //     String url = "https://www.vnsgu.ac.in/Old%20Question%20Papers/Old%20Question%20Papers/EXAM%20PAPER%20FOR%202020%20YEAR/Science%20-%202019/BCA-2019/B.C.A.%20(Sem-VI)%20-2019/B.C.A.(Sem.VI)%20Examination%20Oct.Nov.-2019%20-%20602-E-Commerce%20&%20Cyber%20Secu..pdf";
+  //     var response = await http.get(Uri.parse(url));
+  // var bytes = response.bodyBytes;
+  // var fileName = url.split('/').last;
+  // var tempDir = await getTemporaryDirectory();
+  // var filePath = '${tempDir.path}/$fileName';
+  // File file = File(filePath);
+  // await file.writeAsBytes(bytes);
 
-  Share.shareFiles([filePath], text: 'Check out this PDF!');
+  // Share.shareFiles([filePath], text: 'Check out this PDF!');
 
-    } else {
-      final directory = await getApplicationDocumentsDirectory();
-      Share.shareFiles(['${directory.path}/$filename.pdf'],
-          text: "Invoice of Booking Camp");
+  //   } else {
+  //     final directory = await getApplicationDocumentsDirectory();
+  //     Share.shareFiles(['${directory.path}/$filename.pdf'],
+  //         text: "Invoice of Booking Camp");
     }
   }
 
     goToPdf() {
     PdfService.saveAndOpenPdf(
         context,
-        Invoice(
-            customer: Customer(
-                name: widget.details["name"],
-                address: widget.details["add"],
-                email: widget.details["email"],
-                mobNo: widget.details["mobile"],
-                date: widget.details["bookingDate"]),
-            item: [
-              InvoiceItem(
-                  price: double.parse(widget.details["price"]),
-                  campName: widget.details["campName"],
-                  noOfChild: int.parse(widget.details["child"]),
-                  noOfAdult: int.parse(widget.details["adult"]),
-                  foodType: widget.details["foodType"].toString())
-            ]),
+        widget.customer,
         filename);
   }
 
@@ -328,7 +308,7 @@ class _InvoicePageWidgetState extends State<InvoicePageWidget> {
     ];
     final data = [
       "Id1223230",
-      widget.details["bookingDate"],
+      widget.customer.bookingDate,
       "5 days",
       "${DateTime.now().day}/${DateTime.now().month},/${DateTime.now().year}"
     ];

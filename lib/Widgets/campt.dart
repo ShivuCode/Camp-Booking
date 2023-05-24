@@ -1,8 +1,8 @@
-import 'package:camp_booking/page/Home/laptopHomeScreen.dart';
-import 'package:camp_booking/page/Home/mobileHomeScreen.dart';
-import 'package:camp_booking/page/Home/tabletHomeScreen.dart';
 import 'package:camp_booking/Responsive_Layout/responsive_layout.dart';
 import 'package:flutter/material.dart';
+import '../Pages/HOME/laptopHomeScreen.dart';
+import '../Pages/HOME/mobileHomeScreen.dart';
+import '../Pages/HOME/tabletHomeScreen.dart';
 import '../constant.dart';
 
 Widget campTile(context, double size, bool showAppBar) {

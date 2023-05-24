@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:camp_booking/Models/customer_model.dart';
 import 'package:camp_booking/Pages/INVOICE/laptopInvoice.dart';
 import 'package:camp_booking/Pages/INVOICE/mobileInvoice.dart';
 import 'package:camp_booking/Pages/INVOICE/tabletInvoice.dart';
@@ -26,14 +27,16 @@ class _BookingPageState extends State<BookingPage> {
       email = TextEditingController(),
       address = TextEditingController(),
       bookingDate = TextEditingController(),
-      foodType = TextEditingController(),
+      vegCount = TextEditingController(),
+      nonVegCount = TextEditingController(),
+      groupType = TextEditingController(),
       adult = TextEditingController(),
       child = TextEditingController(),
       totalAmt = TextEditingController(),
       price = TextEditingController(),
       advanceAmt = TextEditingController(),
       ticketFlag = TextEditingController();
-  Map details = {};
+late  Customer customer;
 
   void total() {
     try {
@@ -208,18 +211,55 @@ class _BookingPageState extends State<BookingPage> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      fieldTitle("Food Type"),
+                      fieldTitle("Group Type"),
+                      DropdownButton(
+                        value: "Couple",
+                          items: const [
+                            DropdownMenuItem(child: Text("Family")),
+                            DropdownMenuItem(child: Text("Couple")),
+                            DropdownMenuItem(child: Text("Friends")),
+                            DropdownMenuItem(child: Text("Others"))
+                          ],
+                          onChanged: (value) {
+                            setState(() {
+                              groupType.text = value;
+                            });
+                          })
+                    ],
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      fieldTitle("No. of Veg people"),
                       TextFormField(
                         style: const TextStyle(color: Colors.black),
                         validator: (v) {
                           if (v!.isEmpty) {
-                            return "Required food type";
+                            return "Required";
                           }
                           return null;
                         },
-                        controller: foodType,
+                        controller: vegCount,
                         keyboardType: TextInputType.text,
-                        decoration: fieldDec("Ex- 1 Veg and # Non Veg"),
+                        decoration: fieldDec("0"),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      fieldTitle("No. of Non-Veg people"),
+                      TextFormField(
+                        style: const TextStyle(color: Colors.black),
+                        validator: (v) {
+                          if (v!.isEmpty) {
+                            return "Required";
+                          }
+                          return null;
+                        },
+                        controller: nonVegCount,
+                        keyboardType: TextInputType.text,
+                        decoration: fieldDec("0"),
                       ),
                     ],
                   ),
@@ -252,7 +292,7 @@ class _BookingPageState extends State<BookingPage> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      fieldTitle("Child: ${price.text} + [kids age 0-6 Free]"),
+                      fieldTitle("Child: ${double.parse(price.text)/0.8} + [kids age 0-6 Free]"),
                       TextFormField(
                         style: const TextStyle(color: Colors.black),
                         onChanged: (v) => total(),
@@ -306,31 +346,31 @@ class _BookingPageState extends State<BookingPage> {
                   onPressed: () {
                     //if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save();
-                    details.addAll({
-                      "name": name.text,
-                      "price": price.text,
-                      "bookingDate": bookingDate.text,
-                      "add": address.text,
-                      "mobile": mobile.text,
-                      "email": email.text,
-                      "campName": "Lonavala camp",
-                      "foodType": foodType.text,
-                      "adult": adult.text,
-                      "child": child.text,
-                      "total": totalAmt.text,
-                      "advance": advanceAmt.text,
-                    });
-                    // ApiService.sendEmail(
-                    //     "Booking confirm", "$details", email.text);
-                    sendEmail(context, "Bookin Confirm", details.toString(),
-                        email.text);
+                    customer.addAll(
+                        1,
+                        name.text,
+                        mobile.text,
+                        address.text,
+                        email.text,
+                        int.parse(adult.text),
+                        int.parse(child.text),
+                        int.parse(vegCount.text),
+                        int.parse(nonVegCount.text),
+                        groupType.text,
+                        bookingDate.text,
+                        double.parse(price.text),
+                        double.parse(advanceAmt.text),                        
+                        double.parse(totalAmt.text),
+                        ticketFlag.text,);
+                    //after booking save the customer detail
+
                     nextScreen(
                         context,
                         ResponsiveLayout(
-                            mobileScaffold: MobileInvoice(details: details),
-                            tabletScaffold: TabletInvoice(details: details),
+                            mobileScaffold: MobileInvoice(customer: customer),
+                            tabletScaffold: TabletInvoice(customer: customer,),
                             laptopScaffold: LaptopInvoice(
-                              details: details,
+                              customer: customer,
                             )));
                     //}
                   },
@@ -348,40 +388,24 @@ class _BookingPageState extends State<BookingPage> {
     );
   }
 
-  // sendEmail(context, String subject, String body, String recipientemail) async {
-  //   final Email email = Email(
-  //       body: body,
-  //       subject: subject,
-  //       recipients: [recipientemail],
-  //       isHTML: false);
-  //   try {
-  //     await FlutterEmailSender.send(email);
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text("Succeffully send email : $email")));
-  //   } catch (e) {
+  // sendEmail(context, String subject, String body, String recipientmail) async {
+  //   final Uri params =
+  //       Uri(scheme: 'mailto', path: 'shivubind4160@gmail.com', query: '$body');
+
+  //   runZoned(() async {
+  //     // your asynchronous code here
+  //     if (await canLaunchUrl(params)) {
+  //       await launchUrl(params);
+  //       ScaffoldMessenger.of(context)
+  //           .showSnackBar(SnackBar(content: Text("send:openss")));
+  //     } else {
+  //       throw 'Could not launch $params';
+  //     }
+  //   }, onError: (error, stackTrace) {
   //     ScaffoldMessenger.of(context)
-  //         .showSnackBar(SnackBar(content: Text("error : $e")));
-  //   }
+  //         .showSnackBar(SnackBar(content: Text("error : $error")));
+  //     print('Error: $error');
+  //     print(stackTrace);
+  //   });
   // }
-
-  sendEmail(context, String subject, String body, String recipientmail) async {
-    final Uri params =
-        Uri(scheme: 'mailto', path: 'shivubind4160@gmail.com', query: '$body');
-
-    runZoned(() async {
-      // your asynchronous code here
-      if (await canLaunchUrl(params)) {
-        await launchUrl(params);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("send:openss")));
-      } else {
-        throw 'Could not launch $params';
-      }
-    }, onError: (error, stackTrace) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("error : $error")));
-      print('Error: $error');
-      print(stackTrace);
-    });
-  }
 }
