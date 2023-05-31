@@ -51,10 +51,10 @@ class PdfService {
     final pdf = Document();
 
     pdf.addPage(MultiPage(
-        header: (context) => builtTile(customer),
+        header: (context) => builtHeader(customer),
         build: (context) => [
-              builtHeader(customer),
-              builtcustomer(customer),
+              SizedBox(height: 30),
+              builtItemTable(customer),
               SizedBox(height: 10),
               Divider(),
               SizedBox(height: 5),
@@ -76,14 +76,13 @@ class PdfService {
               child: BarcodeWidget(
                   data: "o23748298386", barcode: Barcode.qrCode()))
         ]),
-        SizedBox(height: 1 * PdfPageFormat.cm),
+        SizedBox(height: 30),
+        builtTile(customer),
+        // SizedBox(height: 1 * PdfPageFormat.cm),
         Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              builtCustomer(customer),
-              builtcustomerInfo(customer)
-            ]),
+            children: [builtCustomer(customer), builtcustomerInfo(customer)]),
       ]);
 
   //built customer Information
@@ -132,11 +131,10 @@ class PdfService {
             style: TextStyle(fontSize: 20, fontBold: Font.courier())),
         SizedBox(height: 10),
         Text("Description"),
-        SizedBox(height: 50)
       ]);
 
 //customer information
-  static builtcustomer(Customer customer) {
+  static builtItemTable(Customer customer) {
     final headers = [
       "Item",
       "Price",
@@ -144,7 +142,7 @@ class PdfService {
       "No of Adults & childs",
       "Total Amount"
     ];
-    final data =[
+    final data = [
       [
         "Lonawala",
         customer.price,
@@ -152,8 +150,8 @@ class PdfService {
         '${customer.adult},${customer.child}',
         ((customer.price * customer.adult) +
             ((customer.price / 0.8) * customer.child))
-      ]]
-    ;
+      ]
+    ];
     return Table.fromTextArray(
         headers: headers,
         data: data,
@@ -187,7 +185,7 @@ class PdfService {
             builtText(title: "Advance", value: adv.toString(), unite: true),
             Divider(),
             builtText(title: "Remaining", value: rem.toString()),
-            Divider(thickness: 0.1),
+            Divider()
           ]))
     ]));
   }

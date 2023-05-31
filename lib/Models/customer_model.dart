@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 class Customer {
   int id;
   String name;
@@ -89,7 +87,7 @@ class Customer {
     };
   }
 
-  Customer fromJson(Map<String, dynamic> json) {
+  factory Customer.fromJson(Map<String, dynamic> json) {
     return Customer(
         id: json['id'],
         name: json['name'],

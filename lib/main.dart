@@ -8,6 +8,15 @@ import 'Pages/HOME/mobileHomeScreen.dart';
 import 'Pages/HOME/tabletHomeScreen.dart';
 
 void main() {
+  ErrorWidget.builder = (FlutterErrorDetails details) {
+    return Container(
+      alignment: Alignment.center,
+      child: Text(
+        'error\n${details.exception}',
+        style: const TextStyle(color: Colors.black12, fontSize: 10),
+      ),
+    );
+  };
   runApp(const MyApp());
 }
 

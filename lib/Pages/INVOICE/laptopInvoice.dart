@@ -12,9 +12,18 @@ class LaptopInvoice extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Row(children: [
         myDrawer(context),
-        Expanded(child: InvoicePageWidget(customer: customer))
+        const VerticalDivider(
+          thickness: 0.1,
+          color: Colors.grey,
+        ),
+        Expanded(
+            child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: InvoicePageWidget(customer: customer),
+        ))
       ]),
     );
   }

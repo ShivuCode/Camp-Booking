@@ -3,8 +3,10 @@ import '../../Widgets/bookingPageWidget.dart';
 import '../../Widgets/campt.dart';
 import 'package:flutter/material.dart';
 
+import '../SEARCH/search.dart';
+
 class TabletHomeScreen extends StatelessWidget {
-  int? pos;
+  String? pos;
 
   TabletHomeScreen({super.key, this.pos});
 
@@ -12,11 +14,14 @@ class TabletHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double size = MediaQuery.of(context).size.width;
-    return Scaffold(
-      appBar: myAppBar,
-      extendBodyBehindAppBar: true,
-      drawer: myDrawer(context),
-      body: pos == 0 ?const  BookingPage(): campTile(context, size, false),
-    );
+    if (pos == 'booking') {
+      return Scaffold(appBar: myAppBar,drawer: myDrawer(context),body: const BookingPage());
+    } else if (pos == 'search') {
+      return  Scaffold(appBar: myAppBar,drawer: myDrawer(context),
+          body: const SearchPage());
+    } else {
+      return Scaffold(appBar: myAppBar,drawer: myDrawer(context),
+          body: campTile(context, size, false));
+    }
   }
 }

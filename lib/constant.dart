@@ -1,11 +1,10 @@
-import 'package:camp_booking/Services/ApiService.dart';
 import 'package:camp_booking/Pages/HOME/laptopHomeScreen.dart';
 import 'package:camp_booking/Pages/HOME/mobileHomeScreen.dart';
 import 'package:camp_booking/Pages/HOME/tabletHomeScreen.dart';
 import 'package:camp_booking/Responsive_Layout/responsive_layout.dart';
+import 'package:camp_booking/Services/ApiService.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 var myAppBar = AppBar(
   backgroundColor: Colors.transparent,
@@ -46,24 +45,40 @@ Widget myDrawer(context) {
               context,
               ResponsiveLayout(
                   mobileScaffold: MobileHomeScreen(
-                    pos: 0,
+                    pos: 'booking',
                   ),
                   tabletScaffold: TabletHomeScreen(
-                    pos: 0,
+                    pos: 'booking',
                   ),
                   laptopScaffold: LaptopHomeScreen(
-                    pos: 0,
+                    pos: 'booking',
                   )));
         },
         leading: const Icon(Icons.person),
         title: const Text("C U S T O M E R"),
       ),
-      const ListTile(
+      ListTile(
+        onTap: () {
+          nextReplacement(
+              context,
+              ResponsiveLayout(
+                  mobileScaffold: MobileHomeScreen(
+                    pos: 'search',
+                  ),
+                  tabletScaffold: TabletHomeScreen(
+                    pos: 'search',
+                  ),
+                  laptopScaffold: LaptopHomeScreen(
+                    pos: 'search',
+                  )));
+        },
         leading: Icon(Icons.search),
         title: Text("S E A R C H"),
       ),
       ListTile(
-        onTap: () {},
+        onTap: () {
+          ApiService.logout(context);
+        },
         leading: const Icon(Icons.logout),
         title: const Text("L O G O U T"),
       ),

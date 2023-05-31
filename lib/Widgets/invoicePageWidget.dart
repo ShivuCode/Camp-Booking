@@ -1,8 +1,11 @@
 import 'package:camp_booking/Models/customer_model.dart';
+import 'package:camp_booking/Services/email.dart';
 import 'package:camp_booking/Services/pdf_seervice..dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:camp_booking/constant.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 // ignore: must_be_immutable
 class InvoicePageWidget extends StatefulWidget {
@@ -26,7 +29,7 @@ class _InvoicePageWidgetState extends State<InvoicePageWidget> {
   final value = [];
   @override
   void initState() {
-        super.initState();
+    super.initState();
   }
 
   @override
@@ -56,6 +59,13 @@ class _InvoicePageWidgetState extends State<InvoicePageWidget> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                height(10),
+                Text("Invoice".toUpperCase(),
+                    style: const TextStyle(fontSize: 20)),
+                height(10),
+                const Text("Description"),
+              ]),
               height(10),
               Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -72,19 +82,12 @@ class _InvoicePageWidgetState extends State<InvoicePageWidget> {
                           Text(widget.customer.name),
                           SizedBox(
                             width: size * 0.3,
-                            child: Text(widget.customer.address,
-                                softWrap: true),
+                            child:
+                                Text(widget.customer.address, softWrap: true),
                           ),
                         ]),
                     invoiceDetail(size < 400 ? 12 : 16),
                   ]),
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                height(10),
-                Text("Invoice".toUpperCase(),
-                    style: const TextStyle(fontSize: 20)),
-                height(10),
-                const Text("Description"),
-              ]),
             ]),
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -117,7 +120,7 @@ class _InvoicePageWidgetState extends State<InvoicePageWidget> {
                         width: 140,
                         alignment: Alignment.center,
                         child: const Text(
-                          "Food Type",
+                          "Food Type No of Veg/Non-Veg",
                           style: TextStyle(fontWeight: FontWeight.w700),
                         ),
                       ),
@@ -163,7 +166,8 @@ class _InvoicePageWidgetState extends State<InvoicePageWidget> {
                       alignment: Alignment.center,
                       width: 140,
                       height: 40,
-                      child: Text('${widget.customer.vegPeopleCount}/${widget.customer.nonVegPeopleCount}'),
+                      child: Text(
+                          '${widget.customer.vegPeopleCount},${widget.customer.nonVegPeopleCount}'),
                     )),
                     TableCell(
                         child: Container(
@@ -213,7 +217,8 @@ class _InvoicePageWidgetState extends State<InvoicePageWidget> {
                       text(
                           title: "Remaining",
                           value: (widget.customer.total -
-                                  double.parse(widget.customer.advAmt.toString()))
+                                  double.parse(
+                                      widget.customer.advAmt.toString()))
                               .toString()),
                       height(5),
                       const Divider(
@@ -274,29 +279,25 @@ class _InvoicePageWidgetState extends State<InvoicePageWidget> {
 
   share(filename) async {
     if (kIsWeb) {
-  //     String url = "https://www.vnsgu.ac.in/Old%20Question%20Papers/Old%20Question%20Papers/EXAM%20PAPER%20FOR%202020%20YEAR/Science%20-%202019/BCA-2019/B.C.A.%20(Sem-VI)%20-2019/B.C.A.(Sem.VI)%20Examination%20Oct.Nov.-2019%20-%20602-E-Commerce%20&%20Cyber%20Secu..pdf";
-  //     var response = await http.get(Uri.parse(url));
-  // var bytes = response.bodyBytes;
-  // var fileName = url.split('/').last;
-  // var tempDir = await getTemporaryDirectory();
-  // var filePath = '${tempDir.path}/$fileName';
-  // File file = File(filePath);
-  // await file.writeAsBytes(bytes);
+      //     String url = "https://www.vnsgu.ac.in/Old%20Question%20Papers/Old%20Question%20Papers/EXAM%20PAPER%20FOR%202020%20YEAR/Science%20-%202019/BCA-2019/B.C.A.%20(Sem-VI)%20-2019/B.C.A.(Sem.VI)%20Examination%20Oct.Nov.-2019%20-%20602-E-Commerce%20&%20Cyber%20Secu..pdf";
+      //     var response = await http.get(Uri.parse(url));
+      // var bytes = response.bodyBytes;
+      // var fileName = url.split('/').last;
+      // var tempDir = await getTemporaryDirectory();
+      // var filePath = '${tempDir.path}/$fileName';
+      // File file = File(filePath);
+      // await file.writeAsBytes(bytes);
 
-  // Share.shareFiles([filePath], text: 'Check out this PDF!');
-
-  //   } else {
-  //     final directory = await getApplicationDocumentsDirectory();
-  //     Share.shareFiles(['${directory.path}/$filename.pdf'],
-  //         text: "Invoice of Booking Camp");
+      // Share.shareFiles([filePath], text: 'Check out this PDF!');
+    } else {
+      final directory = await getApplicationDocumentsDirectory();
+      Share.shareFiles(['${directory.path}/$filename.pdf'],
+          text: "Invoice of Booking Camp");
     }
   }
 
-    goToPdf() {
-    PdfService.saveAndOpenPdf(
-        context,
-        widget.customer,
-        filename);
+  goToPdf() {
+    PdfService.saveAndOpenPdf(context, widget.customer, filename);
   }
 
   invoiceDetail(double size) {

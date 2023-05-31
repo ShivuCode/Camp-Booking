@@ -52,9 +52,9 @@ Widget campTile(context, double size, bool showAppBar) {
                     onTap: () => nextScreen(
                         context,
                         ResponsiveLayout(
-                            mobileScaffold: MobileHomeScreen(pos: 0),
-                            tabletScaffold: TabletHomeScreen(pos: 0),
-                            laptopScaffold: LaptopHomeScreen(pos: 0))),
+                            mobileScaffold: MobileHomeScreen(pos: 'booking'),
+                            tabletScaffold: TabletHomeScreen(pos: 'booking'),
+                            laptopScaffold: LaptopHomeScreen(pos: 'booking'))),
                     child: Container(
                         padding: const EdgeInsets.only(top: 20),
                         child: Column(
@@ -93,9 +93,12 @@ Widget campTile(context, double size, bool showAppBar) {
                             nextReplacement(
                                 context,
                                 ResponsiveLayout(
-                                    mobileScaffold: MobileHomeScreen(pos: 0),
-                                    tabletScaffold: TabletHomeScreen(pos: 0),
-                                    laptopScaffold: LaptopHomeScreen(pos: 0)));
+                                    mobileScaffold:
+                                        MobileHomeScreen(pos: 'booking'),
+                                    tabletScaffold:
+                                        TabletHomeScreen(pos: 'booking'),
+                                    laptopScaffold:
+                                        LaptopHomeScreen(pos: 'booking')));
                             print("yooo");
                           },
                           child: Container(

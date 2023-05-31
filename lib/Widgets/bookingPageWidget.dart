@@ -1,15 +1,13 @@
-import 'dart:async';
-
 import 'package:camp_booking/Models/customer_model.dart';
 import 'package:camp_booking/Pages/INVOICE/laptopInvoice.dart';
 import 'package:camp_booking/Pages/INVOICE/mobileInvoice.dart';
 import 'package:camp_booking/Pages/INVOICE/tabletInvoice.dart';
 import 'package:camp_booking/Responsive_Layout/responsiveWidget.dart';
 import 'package:camp_booking/Responsive_Layout/responsive_layout.dart';
+import 'package:camp_booking/Services/email.dart';
 import 'package:flutter/material.dart';
 import 'package:camp_booking/constant.dart';
-import 'package:flutter_email_sender/flutter_email_sender.dart';
-import 'package:url_launcher/url_launcher.dart';
+
 // import 'package:flutter_email_sender/flutter_email_sender.dart';
 
 // ignore: must_be_immutable
@@ -29,14 +27,14 @@ class _BookingPageState extends State<BookingPage> {
       bookingDate = TextEditingController(),
       vegCount = TextEditingController(),
       nonVegCount = TextEditingController(),
-      groupType = TextEditingController(),
       adult = TextEditingController(),
       child = TextEditingController(),
       totalAmt = TextEditingController(),
       price = TextEditingController(),
       advanceAmt = TextEditingController(),
       ticketFlag = TextEditingController();
-late  Customer customer;
+
+  String? groupType;
 
   void total() {
     try {
@@ -51,11 +49,9 @@ late  Customer customer;
 
   @override
   void initState() {
+    nonVegCount.text = vegCount.text = price.text =
+        adult.text = child.text = totalAmt.text = advanceAmt.text = "0";
     super.initState();
-    adult.text = "0";
-    child.text = "0";
-    totalAmt.text = "0";
-    advanceAmt.text = "0";
   }
 
   @override
@@ -212,19 +208,37 @@ late  Customer customer;
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       fieldTitle("Group Type"),
-                      DropdownButton(
-                        value: "Couple",
-                          items: const [
-                            DropdownMenuItem(child: Text("Family")),
-                            DropdownMenuItem(child: Text("Couple")),
-                            DropdownMenuItem(child: Text("Friends")),
-                            DropdownMenuItem(child: Text("Others"))
-                          ],
-                          onChanged: (value) {
-                            setState(() {
-                              groupType.text = value;
-                            });
-                          })
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                              color: Colors.grey), // Set the border properties
+                          borderRadius:
+                              BorderRadius.circular(8), // Set the border radius
+                        ),
+                        child: DropdownButton<String>(
+                            underline: const Text(""),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 3),
+                            isExpanded: true,
+                            value: groupType,
+                            hint: const Text('Select an option'),
+                            onChanged: (newValue) {
+                              setState(() {
+                                groupType = newValue;
+                              });
+                            },
+                            items: <String>[
+                              'Family',
+                              'Couple',
+                              'Friends',
+                              'Others',
+                            ].map<DropdownMenuItem<String>>((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList()),
+                      ),
                     ],
                   ),
                   Column(
@@ -292,7 +306,7 @@ late  Customer customer;
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      fieldTitle("Child: ${double.parse(price.text)/0.8} + [kids age 0-6 Free]"),
+                      fieldTitle("Child: ${price.text}} + [kids age 0-6 Free]"),
                       TextFormField(
                         style: const TextStyle(color: Colors.black),
                         onChanged: (v) => total(),
@@ -344,35 +358,38 @@ late  Customer customer;
                 height(20),
                 ElevatedButton(
                   onPressed: () {
-                    //if (_formKey.currentState!.validate()) {
+                    // if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save();
-                    customer.addAll(
-                        1,
-                        name.text,
-                        mobile.text,
-                        address.text,
-                        email.text,
-                        int.parse(adult.text),
-                        int.parse(child.text),
-                        int.parse(vegCount.text),
-                        int.parse(nonVegCount.text),
-                        groupType.text,
-                        bookingDate.text,
-                        double.parse(price.text),
-                        double.parse(advanceAmt.text),                        
-                        double.parse(totalAmt.text),
-                        ticketFlag.text,);
+                    Customer customer = Customer(
+                      id: 1,
+                      name: name.text,
+                      address: address.text,
+                      email: email.text,
+                      mobNo: mobile.text,
+                      adult: int.parse(adult.text),
+                      child: int.parse(child.text),
+                      vegPeopleCount: int.parse(vegCount.text),
+                      nonVegPeopleCount: int.parse(nonVegCount.text),
+                      bookingDate: bookingDate.text,
+                      groupType: groupType.toString(),
+                      price: double.parse(price.text),
+                      advAmt: double.parse(advanceAmt.text),
+                      total: double.parse(totalAmt.text),
+                      ticketFlag: ticketFlag.text,
+                    );
+                    Email.sendMail(customer);
                     //after booking save the customer detail
-
                     nextScreen(
                         context,
                         ResponsiveLayout(
                             mobileScaffold: MobileInvoice(customer: customer),
-                            tabletScaffold: TabletInvoice(customer: customer,),
+                            tabletScaffold: TabletInvoice(
+                              customer: customer,
+                            ),
                             laptopScaffold: LaptopInvoice(
                               customer: customer,
                             )));
-                    //}
+                    // }
                   },
                   style: ElevatedButton.styleFrom(
                       minimumSize: const Size(119, 50),
