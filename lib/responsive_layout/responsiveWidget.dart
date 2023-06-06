@@ -39,7 +39,6 @@ class ResponsiveForm {
             if (mod == 0) {
               return const Spacer();
             }
-            var widget = children[children.length - mod];
             mod--;
             return const SizedBox();
           })),

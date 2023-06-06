@@ -1,9 +1,8 @@
-import 'package:camp_booking/Widgets/invoicePageWidget.dart';
 import 'package:camp_booking/constant.dart';
-import '../../Widgets/bookingPageWidget.dart';
-import '../../Widgets/campt.dart';
+import '../../Widgets/booking.dart';
 import 'package:flutter/material.dart';
 
+import '../../Widgets/campt.dart';
 import '../SEARCH/search.dart';
 
 // ignore: must_be_immutable
@@ -16,15 +15,19 @@ class MobileHomeScreen extends StatelessWidget {
     double size = MediaQuery.of(context).size.width;
     if (pos == 'booking') {
       return Scaffold(
-          appBar: myAppBar, drawer: myDrawer(context), body: BookingPage());
+          appBar: appBar(context),
+          drawer: myDrawer(context),
+          body: const BookingPage());
     } else if (pos == 'search') {
       return Scaffold(
-          appBar: myAppBar, drawer: myDrawer(context), body: SearchPage());
+          appBar: appBar(context),
+          drawer: myDrawer(context),
+          body: const SearchPage());
     } else {
       return Scaffold(
-          appBar: myAppBar,
+          appBar: appBar(context),
           drawer: myDrawer(context),
-          body: campTile(context, size, false));
+          body: campTile(context, size));
     }
   }
 }

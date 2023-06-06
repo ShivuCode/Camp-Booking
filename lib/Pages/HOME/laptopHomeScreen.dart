@@ -1,10 +1,10 @@
 import 'package:camp_booking/Pages/SEARCH/search.dart';
-import 'package:camp_booking/Widgets/invoicePageWidget.dart';
+import 'package:camp_booking/Widgets/invoice.dart';
 import 'package:camp_booking/constant.dart';
 
 import 'package:flutter/material.dart';
 
-import '../../Widgets/bookingPageWidget.dart';
+import '../../Widgets/booking.dart';
 import '../../Widgets/campt.dart';
 
 class LaptopHomeScreen extends StatelessWidget {
@@ -48,7 +48,7 @@ class LaptopHomeScreen extends StatelessWidget {
             width: 0.1,
             color: Colors.grey,
           ),
-          Expanded(child: campTile(context, size - 310, true))
+          Expanded(child: campTile(context, size - 310))
         ],
       ));
     }

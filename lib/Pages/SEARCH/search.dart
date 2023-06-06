@@ -18,14 +18,14 @@ class _SearchPageState extends State<SearchPage> {
   List<Customer> customers = [];
   List<Customer> findCustomer = [];
   Future<void> fetchCustomers() async {
-    final response =
-        await http.post(Uri.parse('https://titwi.in/api/customer/'), headers: {
-      'Accept-Control-Allow-Origin': "*",
-      'Access-Control-Allow-Credentials': "true",
-      'Content-Type': "application/json",
-      'Accept': "/"
-    });
+    Map<String, String> header = {
+      'Content-Type': 'application/json',
+      
+      'Accept': 'application/json'
+    };
 
+    final response = await http
+        .get(Uri.parse('https://titwi.in/api/customer/all'), headers: header);
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
       print(jsonResponse);
@@ -55,7 +55,7 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   void initState() {
-    // fetchCustomers();
+    fetchCustomers();
     customers.add(Customer(
         id: 102,
         name: "Shivu",

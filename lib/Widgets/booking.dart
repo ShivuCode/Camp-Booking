@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:camp_booking/Models/customer_model.dart';
 import 'package:camp_booking/Pages/INVOICE/laptopInvoice.dart';
 import 'package:camp_booking/Pages/INVOICE/mobileInvoice.dart';
@@ -360,8 +362,9 @@ class _BookingPageState extends State<BookingPage> {
                   onPressed: () {
                     // if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save();
+                    int id=Random().nextInt(1000);
                     Customer customer = Customer(
-                      id: 1,
+                      id: id,
                       name: name.text,
                       address: address.text,
                       email: email.text,

@@ -6,21 +6,41 @@ import 'package:camp_booking/Services/ApiService.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-var myAppBar = AppBar(
-  backgroundColor: Colors.transparent,
-  elevation: 0,
-  systemOverlayStyle: const SystemUiOverlayStyle(
-      systemNavigationBarColor: Colors.white,
-      statusBarIconBrightness: Brightness.dark,
-      statusBarColor: Colors.white,
-      statusBarBrightness: Brightness.dark),
-  iconTheme: const IconThemeData(
-    color: Colors.black,
-  ),
-);
+AppBar appBar(context) {
+  return AppBar(
+    backgroundColor: Colors.transparent,
+    elevation: 0,
+    systemOverlayStyle: const SystemUiOverlayStyle(
+        systemNavigationBarColor: Colors.white,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarColor: Colors.white,
+        statusBarBrightness: Brightness.dark),
+    iconTheme: const IconThemeData(
+      color: Colors.black,
+    ),
+    actions: [
+      Padding(
+        padding: const EdgeInsets.only(right: 10, top: 10),
+        child: OutlinedButton(
+            style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.black,
+                backgroundColor: Colors.white,
+                maximumSize: const Size(150, 40),
+                shape: RoundedRectangleBorder(
+                    side: BorderSide(color: Colors.grey.shade400),
+                    borderRadius: BorderRadius.circular(30))),
+            onPressed: () {
+              ApiService.logout(context);
+            },
+            child: const Text("L o g O u t")),
+      ),
+    ],
+  );
+}
 
 Widget myDrawer(context) {
   return Drawer(
+    width: 300,
     child: Column(children: [
       const DrawerHeader(
           child: Icon(
@@ -72,8 +92,8 @@ Widget myDrawer(context) {
                     pos: 'search',
                   )));
         },
-        leading: Icon(Icons.search),
-        title: Text("S E A R C H"),
+        leading: const Icon(Icons.search),
+        title: const Text("S E A R C H"),
       ),
       ListTile(
         onTap: () {
@@ -92,6 +112,7 @@ List camps = [
     "image":
         "https://s-ec.bstatic.com/images/hotel/max1024x768/214/21475806.jpg",
     "name": "Alpine camps",
+    "location": "Delhi",
     "price": 1024.0,
     "child": 499.0
   },
@@ -100,6 +121,7 @@ List camps = [
     "image":
         "https://ui.cltpstatic.com/places/hotels/3167/316797/images/tents_w.jpg",
     "price": 1299.0,
+    "location": "Pune",
     "child": 498.0
   },
   {
@@ -107,12 +129,14 @@ List camps = [
     "image":
         "https://t-ec.bstatic.com/images/hotel/max1280x900/163/163487480.jpg",
     "price": 2405.0,
+    "location": "Pune",
     "child": 1050.0
   },
   {
     "image":
         "https://s-ec.bstatic.com/images/hotel/max1024x768/214/21475806.jpg",
     "name": "Alpine camps",
+    "location": "gujarat",
     "price": 1024.0,
     "child": 499.0
   },
@@ -121,6 +145,7 @@ List camps = [
     "image":
         "https://ui.cltpstatic.com/places/hotels/3167/316797/images/tents_w.jpg",
     "price": 1299.0,
+    "location": "Tharalu, Karnataka",
     "child": 498.0
   },
   {
@@ -128,6 +153,7 @@ List camps = [
     "image":
         "https://t-ec.bstatic.com/images/hotel/max1280x900/163/163487480.jpg",
     "price": 2405.0,
+    "location": "Tharalu, Karnataka",
     "child": 1050.0
   },
 ];

@@ -152,7 +152,7 @@ class _InvoicePageWidgetState extends State<InvoicePageWidget> {
                       alignment: Alignment.center,
                       width: 140,
                       height: 40,
-                      child: const Text("Id93864723"),
+                      child: Text(widget.customer.id.toString()),
                     )),
                     TableCell(
                         child: Container(

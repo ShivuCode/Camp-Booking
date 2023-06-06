@@ -1,7 +1,6 @@
-import 'package:camp_booking/Pages/HOME/laptopHomeScreen.dart';
-import 'package:camp_booking/Pages/HOME/mobileHomeScreen.dart';
-import 'package:camp_booking/Pages/HOME/tabletHomeScreen.dart';
-import 'package:camp_booking/Responsive_Layout/responsive_layout.dart';
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import 'package:camp_booking/constant.dart';
@@ -23,6 +22,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void initState() {
+    ApiService.fetchData();
     super.initState();
   }
 
@@ -90,13 +90,20 @@ class _LoginPageState extends State<LoginPage> {
                         backgroundColor: Colors.deepPurpleAccent,
                         foregroundColor: Colors.white),
                     onPressed: () async {
-                      // if (_formKey.currentState!.validate()) {
-                      _formKey.currentState!.save();
-                      setState(() {
-                        isLoad = true;
-                      });
-                      ApiService.loginUser(context, email.text, password.text);
-                      // }
+                      if (_formKey.currentState!.validate()) {
+                        _formKey.currentState!.save();
+                        setState(() {
+                          isLoad = true;
+                        });
+                        await Future.delayed(
+                            const Duration(seconds: 1)); // Add a 1-second delay
+
+                        ApiService.loginUser(
+                            context, email.text, password.text);
+                        setState(() {
+                          isLoad = false;
+                        });
+                      }
                     },
                     child: const Text("Sign In"),
                   ),

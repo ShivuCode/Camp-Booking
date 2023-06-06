@@ -1,6 +1,6 @@
 import 'package:camp_booking/Models/customer_model.dart';
 import 'package:camp_booking/constant.dart';
-import '../../Widgets/invoicePageWidget.dart';
+import '../../Widgets/invoice.dart';
 import 'package:flutter/material.dart';
 
 class MobileInvoice extends StatelessWidget {
@@ -10,7 +10,7 @@ class MobileInvoice extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: myAppBar,
+      appBar: appBar(context),
       drawer: myDrawer(context),
       body: InvoicePageWidget(customer: customer),
     );
