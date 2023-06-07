@@ -10,6 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../Models/customer_model.dart';
+
 class ApiService {
   static String API_KEY = 'This is my supper secret key for jwt';
   //authentication by email or password
@@ -53,6 +55,45 @@ class ApiService {
     final response = await http.get(
         Uri.parse('https://titwi.in/api/customer/all'),
         headers: {"Authorization": "Bearer $token", "Accept": "*/*"});
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return jsonResponse;
+    } else {
+      if (kDebugMode) {
+        print("Error");
+      }
+      return [];
+    }
+  }
+
+  //fetch customer by id
+  static Future<Map<String, dynamic>> findByID(id) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('token') ?? '';
+    final response = await http.get(
+        Uri.parse('https://titwi.in/api/customer/$id'),
+        headers: {"Authorization": "Bearer $token", "Accept": "*/*"});
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return jsonResponse;
+    } else {
+      if (kDebugMode) {
+        print("Error");
+      }
+      return {};
+    }
+  }
+
+  //update customer
+  static Future<List> update(Customer customer) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('token') ?? '';
+
+    final response = await http.put(
+      Uri.parse('https://titwi.in/api/customer/update'),
+      headers: {"Accept": "*/*"},
+      body: jsonEncode(customer.toJson()),
+    );
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
       return jsonResponse;

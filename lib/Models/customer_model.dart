@@ -67,23 +67,23 @@ class Customer {
         ticketFlag: ticketFlag);
   }
 
-  Map<String, dynamic> toJson(Customer customer) {
+ Map<String, dynamic> toJson() {
     return {
-      'id': customer.id,
-      'name': customer.name,
-      'mobile': customer.mobNo,
-      'adult': customer.adult,
-      'child': customer.child,
-      'vegPeopleCount': customer.vegPeopleCount,
-      'nonVegPeopleCount': customer.nonVegPeopleCount,
-      'bookingDate': customer.bookingDate,
-      'groupType': customer.groupType,
-      'email': customer.email,
-      'price': customer.price,
-      'ticketFlag': customer.ticketFlag,
-      'advanceAmount': customer.advAmt,
-      'address': customer.address,
-      'total': customer.total
+      'id': id,
+      'name': name,
+      'mobile': mobNo,
+      'adult': adult,
+      'child': child,
+      'vegPeopleCount': vegPeopleCount,
+      'nonVegPeopleCount': nonVegPeopleCount,
+      'bookingDate':bookingDate,
+      'groupType':groupType,
+      'email': email,
+      'price':price,
+      'ticketFlag': ticketFlag,
+      'advanceAmount': advAmt,
+      'address': address,
+      'total': total
     };
   }
 
@@ -100,10 +100,10 @@ class Customer {
         bookingDate: json['bookingDate'],
         vegPeopleCount: json["vegPeopleCount"],
         nonVegPeopleCount: json["nonVegPeopleCount"],
-        price: json["price"],
-        advAmt: json["advanceAmount"],
-        total:
-            (json["price"] * json["adult"]) + (json["price"] * json["child"]),
+        price: double.parse(json["price"].toString()),
+        advAmt: double.parse(json["advanceAmount"].toString()),
+        total: (json["price"] * double.parse(json["adult"].toString())) +
+            (json["price"] * double.parse(json["child"].toString())),
         ticketFlag: "1");
   }
 }
