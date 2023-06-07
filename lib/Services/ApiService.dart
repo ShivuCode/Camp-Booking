@@ -1,13 +1,11 @@
 import 'dart:convert';
-
-import 'package:camp_booking/Models/customer_model.dart';
-import 'package:camp_booking/Pages/LOGIN/loginPage.dart';
 import 'package:camp_booking/constant.dart';
 import 'package:camp_booking/Pages/HOME/laptopHomeScreen.dart';
 import 'package:camp_booking/Pages/HOME/mobileHomeScreen.dart';
 import 'package:camp_booking/Pages/HOME/tabletHomeScreen.dart';
 import 'package:camp_booking/Responsive_Layout/responsive_layout.dart';
 import 'package:camp_booking/main.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,7 +16,7 @@ class ApiService {
   static void loginUser(context, email, password) async {
     Map<String, String> header = {
       'Content-Type': 'application/json',
-      'Accept': 'application/json'
+      'Accept': 'application/json',
     };
     final msg = jsonEncode({"name": email, "password": password});
 
@@ -49,17 +47,20 @@ class ApiService {
   }
 
   //getting all customers from api
-  static Future<void> fetchData() async {
-    final response = await http
-        .get(Uri.parse('https://titwi.in/api/customer/all'), headers: {
-      'Authentication': "Bearer $API_KEY",
-      'Accept': 'application/json'
-    });
+  static Future<List> fetchData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('token') ?? '';
+    final response = await http.get(
+        Uri.parse('https://titwi.in/api/customer/all'),
+        headers: {"Authorization": "Bearer $token", "Accept": "*/*"});
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
-      print(jsonResponse);
+      return jsonResponse;
     } else {
-      print("Error");
+      if (kDebugMode) {
+        print("Error");
+      }
+      return [];
     }
   }
 

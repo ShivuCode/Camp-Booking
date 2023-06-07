@@ -87,22 +87,23 @@ class Customer {
     };
   }
 
-  factory Customer.fromJson(Map<String, dynamic> json) {
+  factory Customer.fromJson(json) {
     return Customer(
         id: json['id'],
-        name: json['name'],
-        mobNo: json['mobile'],
-        address: json['address'],
+        name: json["name"],
+        mobNo: json["mobile"],
+        address: json["address"],
         email: json['email'],
-        adult: json['adult'],
-        child: json['child'],
-        groupType: json['groupType'],
+        adult: json["adult"],
+        child: json["child"],
+        groupType: "couple",
         bookingDate: json['bookingDate'],
-        vegPeopleCount: json[' vegPeopleCount'],
-        nonVegPeopleCount: json['nonVegPeopleCount'],
-        price: json['price'],
-        advAmt: json['advanceAmount'],
-        total: json['total'],
-        ticketFlag: json['ticketFlag']);
+        vegPeopleCount: json["vegPeopleCount"],
+        nonVegPeopleCount: json["nonVegPeopleCount"],
+        price: json["price"],
+        advAmt: json["advanceAmount"],
+        total:
+            (json["price"] * json["adult"]) + (json["price"] * json["child"]),
+        ticketFlag: "1");
   }
 }

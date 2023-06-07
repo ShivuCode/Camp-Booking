@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server/hotmail.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -18,9 +19,11 @@ class Email {
           "<h2>Booking comfirmed....</h2><br>Name: ${customer.name}<br>Address: ${customer.address}<br>No. of Veg People: ${customer.vegPeopleCount}<br>Booking date: ${customer.bookingDate}<br>Price: ${customer.price} <br>No. of non-Veg people: ${customer.nonVegPeopleCount}<br>No. of Adults: ${customer.adult}<br>No. of Child: ${customer.child}<br><br>Total Amount : ${customer.total}<br>Advance: ${customer.advAmt} <br>----------------------------------------------<br>Remaining Amount: $rem <br><br> Thanks for connecting Us..";
     try {
       final sendReport = await send(message, smtServer);
-      Fluttertoast.showToast(msg: "Email send", gravity: ToastGravity.CENTER);
+      Fluttertoast.showToast(msg: "Email send ${sendReport.mail}", gravity: ToastGravity.CENTER);
     } on MailerException catch (e) {
-      print(e);
+      if (kDebugMode) {
+        print(e);
+      }
     }
   }
 }

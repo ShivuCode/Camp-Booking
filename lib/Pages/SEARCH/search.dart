@@ -1,9 +1,8 @@
-import 'dart:convert';
 import 'package:camp_booking/Models/customer_model.dart';
+import 'package:camp_booking/Services/ApiService.dart';
 import 'package:camp_booking/constant.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 class SearchPage extends StatefulWidget {
   const SearchPage({Key? key}) : super(key: key);
@@ -15,22 +14,18 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   TextEditingController searchId = TextEditingController(),
       searchName = TextEditingController();
-  List<Customer> customers = [];
   List<Customer> findCustomer = [];
-  Future<void> fetchCustomers() async {
-    Map<String, String> header = {
-      'Content-Type': 'application/json',
-      
-      'Accept': 'application/json'
-    };
+  List<Customer> customers = [];
 
-    final response = await http
-        .get(Uri.parse('https://titwi.in/api/customer/all'), headers: header);
-    if (response.statusCode == 200) {
-      final jsonResponse = jsonDecode(response.body);
-      print(jsonResponse);
-    } else {
-      print("Error");
+  void fetchData() async {
+    final data = await ApiService.fetchData();
+
+    for (var element in data) {
+      Customer customer = Customer.fromJson(element);
+      setState(() {
+        customers.add(customer);
+        findCustomer.add(customer);
+      });
     }
   }
 
@@ -43,6 +38,7 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   void findByName(value) {
+    print(customers);
     setState(() {
       findCustomer = customers
           .where((element) => element.name
@@ -55,56 +51,7 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   void initState() {
-    fetchCustomers();
-    customers.add(Customer(
-        id: 102,
-        name: "Shivu",
-        mobNo: "9839847362",
-        address: "Daman",
-        email: "pbind@gmail.com",
-        adult: 3,
-        child: 0,
-        groupType: 'friends',
-        bookingDate: '12/06/2023',
-        vegPeopleCount: 1,
-        nonVegPeopleCount: 2,
-        price: 2000,
-        advAmt: 200,
-        total: 6000,
-        ticketFlag: '1'));
-    customers.add(Customer(
-        id: 103,
-        name: "Siya",
-        mobNo: "9839847362",
-        address: "Daman",
-        email: "pbind@gmail.com",
-        adult: 3,
-        child: 0,
-        groupType: 'friends',
-        bookingDate: '12/06/2023',
-        vegPeopleCount: 1,
-        nonVegPeopleCount: 2,
-        price: 2000,
-        advAmt: 200,
-        total: 6000,
-        ticketFlag: '1'));
-    customers.add(Customer(
-        id: 104,
-        name: "Prabhu",
-        mobNo: "9839847362",
-        address: "Daman",
-        email: "pbind@gmail.com",
-        adult: 3,
-        child: 0,
-        groupType: 'friends',
-        bookingDate: '12/06/2023',
-        vegPeopleCount: 1,
-        nonVegPeopleCount: 2,
-        price: 2000,
-        advAmt: 200,
-        total: 6000,
-        ticketFlag: '1'));
-    findCustomer.addAll(customers);
+    fetchData();
     super.initState();
   }
 
@@ -134,11 +81,11 @@ class _SearchPageState extends State<SearchPage> {
             thickness: 0.7,
           ),
           height(15),
-          const Padding(
-            padding: EdgeInsets.only(left: 30),
+          Padding(
+            padding: const EdgeInsets.only(left: 30),
             child: Text(
-              "Customers 457",
-              style: TextStyle(
+              "Customers ${customers.length}",
+              style: const TextStyle(
                   fontSize: 24, fontWeight: FontWeight.w600, letterSpacing: 1),
             ),
           ),

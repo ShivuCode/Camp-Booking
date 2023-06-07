@@ -15,8 +15,7 @@ class PdfService {
     final pdfBytes = await generatePdf(customer);
 
     if (kIsWeb) {
-      // String url =
-      //     "https://www.vnsgu.ac.in/Old%20Question%20Papers/Old%20Question%20Papers/EXAM%20PAPER%20FOR%202020%20YEAR/Science%20-%202019/BCA-2019/B.C.A.%20(Sem-VI)%20-2019/B.C.A.(Sem.VI)%20Examination%20Oct.Nov.-2019%20-%20602-E-Commerce%20&%20Cyber%20Secu..pdf";
+      // String url ="url";
       // try {
       //   var response = await http.get(Uri.parse(url));
       //   var bytes = response.bodyBytes;
@@ -31,7 +30,9 @@ class PdfService {
       // } catch (e) {
       //   print(e);
       // }
-      print("web download complete");
+      if (kDebugMode) {
+        print("web download complete");
+      }
     } else {
       // Save the PDF file to the Android device
       final directory = await getExternalStorageDirectory();
