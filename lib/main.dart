@@ -1,6 +1,7 @@
 import 'package:camp_booking/Responsive_Layout/responsive_layout.dart';
 import 'package:camp_booking/Pages/LOGIN/loginPage.dart';
 import 'package:flutter/material.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'Pages/HOME/laptopHomeScreen.dart';
@@ -26,7 +27,7 @@ class MyApp extends StatelessWidget {
   Future<bool> checkLoginStatus() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String storedToken = prefs.getString('token') ?? '';
-    if (storedToken.isNotEmpty) {
+    if (storedToken.isNotEmpty && JwtDecoder.isExpired(storedToken) == false) {
       return true;
     } else {
       return false;

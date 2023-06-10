@@ -26,6 +26,7 @@ class _InvoicePageWidgetState extends State<InvoicePageWidget> {
     "No of Adults & childs",
     "Total Amount"
   ];
+
   final value = [];
   @override
   void initState() {
@@ -178,12 +179,17 @@ class _InvoicePageWidgetState extends State<InvoicePageWidget> {
                           "${widget.customer.adult},${widget.customer.child}"),
                     )),
                     TableCell(
-                        child: Container(
-                      alignment: Alignment.center,
-                      width: 140,
-                      height: 40,
-                      child: Text(widget.customer.total.toString()),
-                    )),
+                      child: Container(
+                          alignment: Alignment.center,
+                          width: 140,
+                          height: 40,
+                          child: Text(
+                              (widget.customer.price * widget.customer.adult +
+                                      widget.customer.price /
+                                          0.5 *
+                                          widget.customer.child)
+                                  .toString())),
+                    ),
                   ])
                 ],
               ),
@@ -198,7 +204,12 @@ class _InvoicePageWidgetState extends State<InvoicePageWidget> {
                     children: [
                       text(
                           title: "Total Amount",
-                          value: widget.customer.total.toString()),
+                          value:
+                              (widget.customer.price * widget.customer.adult +
+                                      widget.customer.price /
+                                          0.5 *
+                                          widget.customer.child)
+                                  .toString()),
                       text(
                           title: "Advance Amount",
                           value: widget.customer.advAmt.toString()),
@@ -216,10 +227,14 @@ class _InvoicePageWidgetState extends State<InvoicePageWidget> {
                       height(5),
                       text(
                           title: "Remaining",
-                          value: (widget.customer.total -
-                                  double.parse(
-                                      widget.customer.advAmt.toString()))
-                              .toString()),
+                          value:
+                              ((widget.customer.price * widget.customer.adult +
+                                          widget.customer.price /
+                                              0.5 *
+                                              widget.customer.child) -
+                                      double.parse(
+                                          widget.customer.advAmt.toString()))
+                                  .toString()),
                       height(5),
                       const Divider(
                         thickness: 0.4,

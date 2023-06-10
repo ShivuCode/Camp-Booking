@@ -106,58 +106,6 @@ Widget myDrawer(context) {
   );
 }
 
-//list of camps details
-List camps = [
-  {
-    "image":
-        "https://s-ec.bstatic.com/images/hotel/max1024x768/214/21475806.jpg",
-    "name": "Alpine camps",
-    "location": "Delhi",
-    "price": 1024.0,
-    "child": 499.0
-  },
-  {
-    "name": "Ganga View Camp",
-    "image":
-        "https://ui.cltpstatic.com/places/hotels/3167/316797/images/tents_w.jpg",
-    "price": 1299.0,
-    "location": "Pune",
-    "child": 498.0
-  },
-  {
-    "name": "Ac Cottage",
-    "image":
-        "https://t-ec.bstatic.com/images/hotel/max1280x900/163/163487480.jpg",
-    "price": 2405.0,
-    "location": "Pune",
-    "child": 1050.0
-  },
-  {
-    "image":
-        "https://s-ec.bstatic.com/images/hotel/max1024x768/214/21475806.jpg",
-    "name": "Alpine camps",
-    "location": "gujarat",
-    "price": 1024.0,
-    "child": 499.0
-  },
-  {
-    "name": "Ganga View Camp",
-    "image":
-        "https://ui.cltpstatic.com/places/hotels/3167/316797/images/tents_w.jpg",
-    "price": 1299.0,
-    "location": "Tharalu, Karnataka",
-    "child": 498.0
-  },
-  {
-    "name": "Ac Cottage",
-    "image":
-        "https://t-ec.bstatic.com/images/hotel/max1280x900/163/163487480.jpg",
-    "price": 2405.0,
-    "location": "Tharalu, Karnataka",
-    "child": 1050.0
-  },
-];
-
 Widget height(double h) {
   return SizedBox(
     height: h,

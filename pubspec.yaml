@@ -45,6 +45,7 @@ dependencies:
   share_plus: ^7.0.0
   mailer:
   fluttertoast:
+  intl:
 
 
 

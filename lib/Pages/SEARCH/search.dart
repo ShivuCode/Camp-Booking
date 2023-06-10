@@ -19,7 +19,13 @@ class _SearchPageState extends State<SearchPage> {
       childController = TextEditingController(),
       typeController = TextEditingController(),
       priceController = TextEditingController(),
-      totalController = TextEditingController();
+      totalController = TextEditingController(),
+      email = TextEditingController(),
+      address = TextEditingController(),
+      noVeg = TextEditingController(),
+      nonVeg = TextEditingController(),
+      advAmt = TextEditingController(),
+      mobile = TextEditingController();
 
   TextEditingController searchId = TextEditingController(),
       searchName = TextEditingController();
@@ -120,7 +126,9 @@ class _SearchPageState extends State<SearchPage> {
   header() {
     List headers = [
       "Id",
-      "Customer",
+      "Customer Name ",
+      "Address",
+      "Mobile No.",
       "Booking Date",
       "Person",
       "Price",
@@ -135,99 +143,13 @@ class _SearchPageState extends State<SearchPage> {
 
   rows() {
     return customers.isEmpty
-        ? List.generate(customers.length, (i) {
-            return DataRow(cells: [
-              DataCell(
-                Container(
-                  width: 100,
-                  height: 35,
-                  alignment: Alignment.centerLeft,
-                  child: Text(customers[i].id.toString()),
-                ),
-              ),
-              DataCell(
-                Container(
-                  alignment: Alignment.centerLeft,
-                  width: 150,
-                  height: 35,
-                  child: Text(customers[i].name),
-                ),
-              ),
-              DataCell(
-                Container(
-                  alignment: Alignment.center,
-                  width: 150,
-                  height: 35,
-                  child: Text(customers[i].bookingDate),
-                ),
-              ),
-              DataCell(
-                Container(
-                  alignment: Alignment.center,
-                  width: 100,
-                  height: 35,
-                  child: Text(
-                      (customers[i].adult + customers[i].child).toString()),
-                ),
-              ),
-              DataCell(
-                Container(
-                  alignment: Alignment.centerLeft,
-                  width: 150,
-                  height: 35,
-                  child: Text(customers[i].price.toString()),
-                ),
-              ),
-              DataCell(
-                Container(
-                  alignment: Alignment.centerLeft,
-                  width: 150,
-                  height: 35,
-                  child: Text(customers[i].total.toString()),
-                ),
-              ),
-              DataCell(
-                Container(
-                  width: 50,
-                  alignment: Alignment.center,
-                  height: 35,
-                  child: Row(
-                    children: [
-                      IconButton(
-                          splashRadius: 15,
-                          onPressed: () {
-                            setState(() {
-                              idController.text = customers[i].id.toString();
-                              bookingDateController.text =
-                                  customers[i].bookingDate.toString();
-                              nameController.text = customers[i].name;
-                              adultController.text =
-                                  customers[i].adult.toString();
-                              childController.text =
-                                  customers[i].child.toString();
-                              typeController.text =
-                                  customers[i].groupType.toString();
-                              priceController.text =
-                                  customers[i].price.toString();
-                              totalController.text =
-                                  customers[i].total.toString();
-                            });
-                            editBox(context, i);
-                            customers = [];
-                            customers = [];
-                            fetchData();
-                          },
-                          icon: const Icon(
-                            Icons.edit,
-                            size: 15,
-                          ))
-                    ],
-                  ),
-                ),
-              )
-            ]);
-          })
+        ? [
+            DataRow(
+                cells: List.generate(9, (index) => const DataCell(Text(""))))
+          ]
         : List.generate(findCustomer.length, (i) {
+            double total = customers[i].price * customers[i].adult +
+                customers[i].price * 0.45 * customers[i].child;
             return DataRow(cells: [
               DataCell(
                 Container(
@@ -243,6 +165,22 @@ class _SearchPageState extends State<SearchPage> {
                   width: 150,
                   height: 35,
                   child: Text(findCustomer[i].name),
+                ),
+              ),
+              DataCell(
+                Container(
+                  alignment: Alignment.centerLeft,
+                  width: 150,
+                  height: 35,
+                  child: Text(findCustomer[i].address),
+                ),
+              ),
+              DataCell(
+                Container(
+                  alignment: Alignment.centerLeft,
+                  width: 150,
+                  height: 35,
+                  child: Text(findCustomer[i].mobNo),
                 ),
               ),
               DataCell(
@@ -264,7 +202,7 @@ class _SearchPageState extends State<SearchPage> {
               ),
               DataCell(
                 Container(
-                  alignment: Alignment.centerLeft,
+                  alignment: Alignment.centerRight,
                   width: 120,
                   height: 35,
                   child: Text(findCustomer[i].price.toString()),
@@ -272,10 +210,10 @@ class _SearchPageState extends State<SearchPage> {
               ),
               DataCell(
                 Container(
-                  alignment: Alignment.centerLeft,
+                  alignment: Alignment.centerRight,
                   width: 120,
                   height: 35,
-                  child: Text(findCustomer[i].total.toString()),
+                  child: Text(total.toString()),
                 ),
               ),
               DataCell(
@@ -300,8 +238,15 @@ class _SearchPageState extends State<SearchPage> {
                                   findCustomer[i].groupType.toString();
                               priceController.text =
                                   findCustomer[i].price.toString();
-                              totalController.text =
-                                  findCustomer[i].total.toString();
+                              totalController.text = total.toString();
+                              email.text = findCustomer[i].email;
+                              mobile.text = findCustomer[i].mobNo;
+                              address.text = findCustomer[i].address;
+                              advAmt.text = findCustomer[i].advAmt.toString();
+                              noVeg.text =
+                                  findCustomer[i].vegPeopleCount.toString();
+                              nonVeg.text =
+                                  findCustomer[i].nonVegPeopleCount.toString();
                             });
                             editBox(context, i);
                             findCustomer = [];
@@ -343,14 +288,14 @@ class _SearchPageState extends State<SearchPage> {
           );
         }
 
-        double size = MediaQuery.of(context).size.width;
+        Size size = MediaQuery.of(context).size;
 
         return AlertDialog(
           title: const Text('Edit Customer'),
           content: Container(
             alignment: Alignment.center,
-            width: size > 600 ? 600 : double.infinity,
-            height: size < 600 ? 400 : 300,
+            width: size.width > 600 ? 600 : double.infinity,
+            height: size.height < 600 ? size.height * 0.5 : 400,
             child: SingleChildScrollView(
               scrollDirection: Axis.vertical,
               child: Wrap(
@@ -367,6 +312,18 @@ class _SearchPageState extends State<SearchPage> {
                     child: TextFormField(
                         controller: nameController,
                         decoration: decorat("Name")),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(5),
+                    width: 300,
+                    child: TextFormField(
+                        controller: address, decoration: decorat("Address")),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(5),
+                    width: 300,
+                    child: TextFormField(
+                        controller: mobile, decoration: decorat("Mobile No")),
                   ),
                   Container(
                     padding: const EdgeInsets.all(5),
@@ -399,6 +356,20 @@ class _SearchPageState extends State<SearchPage> {
                     padding: const EdgeInsets.all(5),
                     width: 300,
                     child: TextFormField(
+                        controller: noVeg,
+                        decoration: decorat("No. of Veg People")),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(5),
+                    width: 300,
+                    child: TextFormField(
+                        controller: nonVeg,
+                        decoration: decorat("No. of Non-Veg people")),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(5),
+                    width: 300,
+                    child: TextFormField(
                       controller: typeController,
                       decoration: decorat(
                         'groupType',
@@ -409,10 +380,33 @@ class _SearchPageState extends State<SearchPage> {
                     padding: const EdgeInsets.all(5),
                     width: 300,
                     child: TextFormField(
-                      enabled: false,
+                      onChanged: (v) => () {
+                        try {
+                          double a = double.parse(adultController.text) *
+                                  double.parse(
+                                      priceController.text.toString()) +
+                              double.parse(childController.text) *
+                                  (double.parse(
+                                          priceController.text.toString()) *
+                                      0.45);
+                          setState(() {
+                            totalController.text = a.toString();
+                          });
+                        } catch (e) {}
+                      }(),
                       controller: priceController,
                       decoration: decorat(
                         'Price',
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(5),
+                    width: 300,
+                    child: TextFormField(
+                      controller: advAmt,
+                      decoration: decorat(
+                        'Advance Amount',
                       ),
                     ),
                   ),
@@ -456,6 +450,11 @@ class _SearchPageState extends State<SearchPage> {
                   findCustomer[i].adult = int.parse(adultController.text);
                   findCustomer[i].child = int.parse(childController.text);
                   findCustomer[i].groupType = typeController.text;
+                  findCustomer[i].address = address.text;
+                  findCustomer[i].price = int.parse(priceController.text);
+                  findCustomer[i].nonVegPeopleCount = int.parse(nonVeg.text);
+                  findCustomer[i].vegPeopleCount = int.parse(nonVeg.text);
+                  findCustomer[i].mobNo = mobile.text;
                 });
                 ApiService.update(findCustomer[i]);
 
@@ -470,5 +469,16 @@ class _SearchPageState extends State<SearchPage> {
         );
       },
     );
+    void total() {
+      try {
+        double a = double.parse(adultController.text) *
+                double.parse(priceController.text.toString()) +
+            double.parse(childController.text) *
+                (double.parse(priceController.text.toString()) * 0.45);
+        setState(() {
+          totalController.text = a.toString();
+        });
+      } catch (e) {}
+    }
   }
 }

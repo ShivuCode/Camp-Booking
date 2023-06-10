@@ -1,4 +1,3 @@
-import 'dart:math';
 
 import 'package:camp_booking/Models/customer_model.dart';
 import 'package:camp_booking/Pages/INVOICE/laptopInvoice.dart';
@@ -6,9 +5,11 @@ import 'package:camp_booking/Pages/INVOICE/mobileInvoice.dart';
 import 'package:camp_booking/Pages/INVOICE/tabletInvoice.dart';
 import 'package:camp_booking/Responsive_Layout/responsiveWidget.dart';
 import 'package:camp_booking/Responsive_Layout/responsive_layout.dart';
+import 'package:camp_booking/Services/ApiService.dart';
 import 'package:camp_booking/Services/email.dart';
 import 'package:flutter/material.dart';
 import 'package:camp_booking/constant.dart';
+import 'package:intl/intl.dart';
 
 // import 'package:flutter_email_sender/flutter_email_sender.dart';
 
@@ -37,14 +38,16 @@ class _BookingPageState extends State<BookingPage> {
       ticketFlag = TextEditingController();
 
   String? groupType;
-
+  double childPrice = 0;
   void total() {
     try {
       double a =
           double.parse(adult.text) * double.parse(price.text.toString()) +
-              double.parse(child.text) * double.parse(price.text.toString());
+              double.parse(child.text) *
+                  (double.parse(price.text.toString()) * 0.45);
       setState(() {
         totalAmt.text = a.toString();
+        childPrice = double.parse(price.text.toString()) * 0.45;
       });
     } catch (e) {}
   }
@@ -108,7 +111,7 @@ class _BookingPageState extends State<BookingPage> {
                         validator: (v) {
                           if (v!.isEmpty) {
                             return "Required number";
-                          } else if (v.length < 9) {
+                          } else if (v.length < 9 || v.length > 10) {
                             return 'Invalid number';
                           } else {
                             return null;
@@ -177,8 +180,10 @@ class _BookingPageState extends State<BookingPage> {
                                 lastDate: DateTime(3000));
                             if (dt != null) {
                               setState(() {
-                                bookingDate.text =
-                                    "${dt.day}/${dt.month}/${dt.year}";
+                                final DateFormat formatter =
+                                    DateFormat('yyyy-MM-dd\'T\'HH:mm:ss');
+                                String formattede = formatter.format(dt);
+                                bookingDate.text = formattede;
                               });
                             }
                           },
@@ -308,7 +313,7 @@ class _BookingPageState extends State<BookingPage> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      fieldTitle("Child: ${price.text}} + [kids age 0-6 Free]"),
+                      fieldTitle("Child: $childPrice} + [kids age 0-6 Free]"),
                       TextFormField(
                         style: const TextStyle(color: Colors.black),
                         onChanged: (v) => total(),
@@ -322,6 +327,7 @@ class _BookingPageState extends State<BookingPage> {
                     children: [
                       fieldTitle("Ticket Flag"),
                       TextFormField(
+                        enabled: false,
                         style: const TextStyle(color: Colors.black),
                         controller: ticketFlag,
                         keyboardType: TextInputType.text,
@@ -359,40 +365,50 @@ class _BookingPageState extends State<BookingPage> {
                 ]),
                 height(20),
                 ElevatedButton(
-                  onPressed: () {
-                    // if (_formKey.currentState!.validate()) {
-                    _formKey.currentState!.save();
-                    int id=Random().nextInt(1000);
-                    Customer customer = Customer(
-                      id: id,
-                      name: name.text,
-                      address: address.text,
-                      email: email.text,
-                      mobNo: mobile.text,
-                      adult: int.parse(adult.text),
-                      child: int.parse(child.text),
-                      vegPeopleCount: int.parse(vegCount.text),
-                      nonVegPeopleCount: int.parse(nonVegCount.text),
-                      bookingDate: bookingDate.text,
-                      groupType: groupType.toString(),
-                      price: double.parse(price.text),
-                      advAmt: double.parse(advanceAmt.text),
-                      total: double.parse(totalAmt.text),
-                      ticketFlag: ticketFlag.text,
-                    );
-                    Email.sendMail(customer);
-                    //after booking save the customer detail
-                    nextScreen(
-                        context,
-                        ResponsiveLayout(
-                            mobileScaffold: MobileInvoice(customer: customer),
-                            tabletScaffold: TabletInvoice(
-                              customer: customer,
-                            ),
-                            laptopScaffold: LaptopInvoice(
-                              customer: customer,
-                            )));
-                    // }
+                  onPressed: () async {
+                    if (_formKey.currentState!.validate()) {
+                      _formKey.currentState!.save();
+                      Customer customer = Customer(
+                        id: 1,
+                        name: name.text,
+                        address: address.text,
+                        email: email.text,
+                        mobNo: mobile.text,
+                        adult: int.parse(adult.text),
+                        child: int.parse(child.text),
+                        vegPeopleCount: int.parse(vegCount.text),
+                        nonVegPeopleCount: int.parse(nonVegCount.text),
+                        bookingDate: bookingDate.text,
+                        groupType: groupType.toString(),
+                        price: int.parse(price.text),
+                        advAmt: int.parse(advanceAmt.text),
+                        ticketFlag: 1,
+                      );
+                      // print(customer.mobNo);
+                      // print(customer.toJson());
+                      Future<bool> show = ApiService.addNew(customer);
+                      if (await show) {
+                        print("suceeful");
+                        //after booking save the customer detail
+                        Email.sendMail(customer);
+                        // ignore: use_build_context_synchronously
+                        nextScreen(
+                            context,
+                            ResponsiveLayout(
+                                mobileScaffold:
+                                    MobileInvoice(customer: customer),
+                                tabletScaffold: TabletInvoice(
+                                  customer: customer,
+                                ),
+                                laptopScaffold: LaptopInvoice(
+                                  customer: customer,
+                                )));
+                      }
+                    } else {
+                      // ignore: use_build_context_synchronously
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Booking faild! Try Later")));
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                       minimumSize: const Size(119, 50),
@@ -407,25 +423,4 @@ class _BookingPageState extends State<BookingPage> {
       ),
     );
   }
-
-  // sendEmail(context, String subject, String body, String recipientmail) async {
-  //   final Uri params =
-  //       Uri(scheme: 'mailto', path: 'shivubind4160@gmail.com', query: '$body');
-
-  //   runZoned(() async {
-  //     // your asynchronous code here
-  //     if (await canLaunchUrl(params)) {
-  //       await launchUrl(params);
-  //       ScaffoldMessenger.of(context)
-  //           .showSnackBar(SnackBar(content: Text("send:openss")));
-  //     } else {
-  //       throw 'Could not launch $params';
-  //     }
-  //   }, onError: (error, stackTrace) {
-  //     ScaffoldMessenger.of(context)
-  //         .showSnackBar(SnackBar(content: Text("error : $error")));
-  //     print('Error: $error');
-  //     print(stackTrace);
-  //   });
-  // }
 }

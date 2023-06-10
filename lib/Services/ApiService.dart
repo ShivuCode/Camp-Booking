@@ -66,6 +66,28 @@ class ApiService {
     }
   }
 
+  //add customer
+  static Future<bool> addNew(Customer customer) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('token') ?? '';
+    print(token);
+    final response = await http.post(
+        Uri.parse('https://titwi.in/api/customer/add'),
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json"
+        },
+        body: jsonEncode(customer.toJson()));
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      if (kDebugMode) {
+        print(response.body);
+      }
+      return false;
+    }
+  }
+
   //fetch customer by id
   static Future<Map<String, dynamic>> findByID(id) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -85,27 +107,27 @@ class ApiService {
   }
 
   //update customer
-  static Future<List> update(Customer customer) async {
+  static void update(Customer customer) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String token = prefs.getString('token') ?? '';
 
     final response = await http.put(
-      Uri.parse('https://titwi.in/api/customer/update'),
-      headers: {"Accept": "*/*"},
+      Uri.parse('https://titwi.in/api/customer/${customer.id}'),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token"
+      },
       body: jsonEncode(customer.toJson()),
     );
     if (response.statusCode == 200) {
-      final jsonResponse = jsonDecode(response.body);
-      return jsonResponse;
     } else {
       if (kDebugMode) {
-        print("Error");
+        print(response.body);
       }
-      return [];
     }
   }
 
-  //logout
+  //logoutA
   static logout(context) async {
     SharedPreferences sf = await SharedPreferences.getInstance();
     sf.remove('token');
