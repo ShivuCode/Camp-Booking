@@ -15,24 +15,7 @@ class PdfService {
     final pdfBytes = await generatePdf(customer);
 
     if (kIsWeb) {
-      // String url ="url";
-      // try {
-      //   var response = await http.get(Uri.parse(url));
-      //   var bytes = response.bodyBytes;
-      //   var fileName = url.split('/').last;
-      //   var anchor = html.AnchorElement(
-      //     href: 'data:application/octet-stream;base64,${base64.encode(bytes)}',
-      //   )..setAttribute('download', fileName);
-
-      //   html.document.body?.append(anchor);
-      //   anchor.click();
-      //   anchor.remove();
-      // } catch (e) {
-      //   print(e);
-      // }
-      if (kDebugMode) {
-        print("web download complete");
-      }
+      saveWeb(pdfBytes);
     } else {
       // Save the PDF file to the Android device
       final directory = await getExternalStorageDirectory();
