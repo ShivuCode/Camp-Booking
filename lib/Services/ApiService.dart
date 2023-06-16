@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../Models/customer_model.dart';
 
 class ApiService {
+  // ignore: non_constant_identifier_names
   static String API_KEY = 'This is my supper secret key for jwt';
   //authentication by email or password
   static void loginUser(context, email, password) async {
@@ -22,29 +23,34 @@ class ApiService {
     };
     final msg = jsonEncode({"name": email, "password": password});
 
-    var response = await http.post(
-      Uri.parse('https://titwi.in/api/login/authenticate'),
-      headers: header,
-      body: msg,
-    );
+    try {
+      var response = await http.post(
+        Uri.parse('https://titwi.in/api/login/authenticate'),
+        headers: header,
+        body: msg,
+      );
 
-    if (response.statusCode == 200) {
-      final jsonResponse = jsonDecode(response.body);
-      final myToken = jsonResponse['token'];
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.setString('token', myToken);
-      nextReplacement(
-          context,
-          ResponsiveLayout(
-              mobileScaffold: MobileHomeScreen(),
-              tabletScaffold: TabletHomeScreen(),
-              laptopScaffold: LaptopHomeScreen()));
-    } else if (response.statusCode == 401) {
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        final myToken = jsonResponse['token'];
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        prefs.setString('token', myToken);
+        nextReplacement(
+            context,
+            ResponsiveLayout(
+                mobileScaffold: MobileHomeScreen(),
+                tabletScaffold: TabletHomeScreen(),
+                laptopScaffold: LaptopHomeScreen()));
+      } else if (response.statusCode == 401) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text("Something Incorrect")));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Something went wrong")));
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Something Incorrect")));
-    } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Something went wrong")));
+          .showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
 
@@ -66,11 +72,29 @@ class ApiService {
     }
   }
 
+  static Future<List> fetchDataPage(page) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('token') ?? '';
+    final response = await http.get(
+        Uri.parse(
+            'https://titwi.in/api/customer/all?context=embed&per_page=2&page=$page'),
+        headers: {"Authorization": "Bearer $token", "Accept": "*/*"});
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return jsonResponse;
+    } else {
+      if (kDebugMode) {
+        print("Error");
+      }
+      return [];
+    }
+  }
+
   //add customer
   static Future<bool> addNew(Customer customer) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String token = prefs.getString('token') ?? '';
-    print(token);
+
     final response = await http.post(
         Uri.parse('https://titwi.in/api/customer/add'),
         headers: {
@@ -106,8 +130,27 @@ class ApiService {
     }
   }
 
+  //fetch customer by Name
+  static Future<List<dynamic>> findByName(name) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('token') ?? '';
+    final response = await http.get(
+        Uri.parse('https://titwi.in/api/customer/$name'),
+        headers: {"Authorization": "Bearer $token", "Accept": "*/*"});
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return jsonResponse;
+    } else {
+      if (kDebugMode) {
+        print("Error");
+      }
+      return [];
+    }
+  }
+
   //update customer
-  static void update(Customer customer) async {
+  static Future<bool> update(Customer customer) async {
+    print(customer.toJson());
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String token = prefs.getString('token') ?? '';
 
@@ -120,10 +163,13 @@ class ApiService {
       body: jsonEncode(customer.toJson()),
     );
     if (response.statusCode == 200) {
+      print(response.body);
+      return true;
     } else {
       if (kDebugMode) {
         print(response.body);
       }
+      return false;
     }
   }
 

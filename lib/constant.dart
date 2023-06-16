@@ -6,6 +6,7 @@ import 'package:camp_booking/Services/ApiService.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+const mainColor = Color(0xFF0ECB7B);
 AppBar appBar(context) {
   return AppBar(
     backgroundColor: Colors.transparent,
@@ -65,17 +66,17 @@ Widget myDrawer(context) {
               context,
               ResponsiveLayout(
                   mobileScaffold: MobileHomeScreen(
-                    pos: 'booking',
+                    pos: 'search',
                   ),
                   tabletScaffold: TabletHomeScreen(
-                    pos: 'booking',
+                    pos: 'search',
                   ),
                   laptopScaffold: LaptopHomeScreen(
-                    pos: 'booking',
+                    pos: 'search',
                   )));
         },
         leading: const Icon(Icons.person),
-        title: const Text("C U S T O M E R"),
+        title: const Text("B O O K I N G S"),
       ),
       ListTile(
         onTap: () {
@@ -129,36 +130,6 @@ nextReplacement(context, page) {
 //Login field design
 dec(String hint) {
   InputDecoration decoration = InputDecoration(
-      border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(5), borderSide: BorderSide.none),
-      hintText: hint,
-      hintStyle: const TextStyle(color: Colors.grey),
-      filled: true,
-      fillColor: Colors.white,
-      focusColor: Colors.white,
-      hoverColor: Colors.white);
-  return decoration;
-}
-
-//field title of form
-fieldTitle(String title) {
-  return Column(
-    children: [
-      Text(
-        title,
-        style: const TextStyle(
-            fontSize: 18, fontWeight: FontWeight.w400, color: Colors.black54),
-      ),
-      height(5)
-    ],
-  );
-}
-
-//fields decoration
-fieldDec(String hint) {
-  InputDecoration decoration = InputDecoration(
-    hintText: hint,
-    hintStyle: const TextStyle(color: Colors.grey, fontSize: 16),
     border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(5),
         borderSide: const BorderSide(color: Colors.grey)),
@@ -167,10 +138,11 @@ fieldDec(String hint) {
         borderSide: const BorderSide(color: Colors.grey)),
     focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(5),
-        borderSide: const BorderSide(color: Colors.grey)),
-    errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(5),
-        borderSide: const BorderSide(color: Colors.grey)),
+        borderSide: const BorderSide(color: mainColor, width: 1.3)),
+    hintText: hint,
+    hintStyle: const TextStyle(color: Colors.grey),
+    filled: true,
+    fillColor: Colors.white,
   );
   return decoration;
 }

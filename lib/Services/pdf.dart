@@ -1,210 +1,202 @@
-import 'dart:convert';
-import 'dart:io' as io;
-import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+
+import 'package:downloads_path_provider_28/downloads_path_provider_28.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:pdf/pdf.dart';
-import 'package:http/http.dart' as http;
 import 'package:pdf/widgets.dart';
-import 'package:camp_booking/constant.dart';
+import 'package:permission_handler/permission_handler.dart';
+
 import '../Models/customer_model.dart';
-import '../Pages/pdfView.dart';
 
 class PdfService {
-  static Future<void> saveAndOpenPdf(context, customer, fileName) async {
-    // Generate the PDF file
-    final pdfBytes = await generatePdf(customer);
+  static Future<String> generatePDF(Customer customer) async {
+    if (await Permission.storage.request().isGranted) {
+      final pdf = Document();
 
-    if (kIsWeb) {
-      saveWeb(pdfBytes);
+      pdf.addPage(MultiPage(
+        header: (context) => header(),
+        build: (context) => [
+          SizedBox(height: 20),
+          formTo(customer),
+          SizedBox(height: 20),
+          builtItemTable(customer),
+          Divider(),
+          Row(children: [
+            Expanded(child: builtTerms()),
+            Expanded(child: builtTotal(customer)),
+            SizedBox(width: 5)
+          ]),
+          SizedBox(height: 20),
+        ],
+      ));
+
+      final directory = await DownloadsPathProvider.downloadsDirectory;
+      final file = File('${directory!.path}/invoice.pdf');
+      await file.writeAsBytes(await pdf.save());
+      Fluttertoast.showToast(msg: "Downloaded", gravity: ToastGravity.BOTTOM);
+      return file.path;
     } else {
-      // Save the PDF file to the Android device
-      final directory = await getExternalStorageDirectory();
-      final file = io.File('${directory?.path}/$fileName.pdf');
-      try {
-        await file.writeAsBytes(pdfBytes);
-
-        nextScreen(context, PdfViewer(path: file.path));
-
-        // Open the PDF file using the default PDF viewer on the device
-      } catch (e) {}
+      Fluttertoast.showToast(
+          msg: "We can't download", gravity: ToastGravity.BOTTOM);
+      return '';
     }
   }
-
-  // Function to generate the PDF file
-  static Future<List<int>> generatePdf(Customer customer) async {
-    final pdf = Document();
-
-    pdf.addPage(MultiPage(
-        header: (context) => builtHeader(customer),
-        build: (context) => [
-              SizedBox(height: 30),
-              builtItemTable(customer),
-              SizedBox(height: 10),
-              Divider(),
-              SizedBox(height: 5),
-              builtTotal(customer),
-            ],
-        footer: (context) => buildFooter(customer)));
-
-    return pdf.save();
-  }
-
-  static builtHeader(Customer customer) =>
-      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        SizedBox(height: 1 * PdfPageFormat.cm),
-        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          // builtSupplier(customer),
-          Container(
-              height: 50,
-              width: 50,
-              child: BarcodeWidget(
-                  data: "o23748298386", barcode: Barcode.qrCode()))
-        ]),
-        SizedBox(height: 30),
-        builtTile(customer),
-        // SizedBox(height: 1 * PdfPageFormat.cm),
-        Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [builtCustomer(customer), builtcustomerInfo(customer)]),
-      ]);
-
-  //built customer Information
-  static builtcustomerInfo(Customer customer) {
-    final title = [
-      "customer Number: ",
-      "customer Date: ",
-      "Payment Terms: ",
-      "Due Date: "
-    ];
-    final data = [
-      "Id1223230",
-      customer.bookingDate,
-      "5 days",
-      DateTime.now().toString()
-    ];
-    return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: List.generate(title.length, (index) {
-          return builtText(title: title[index], value: data[index], width: 200);
-        }));
-  }
-
-//customer address
-  static builtCustomer(Customer customer) =>
-      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(customer.email, style: TextStyle(fontWeight: FontWeight.bold)),
-        SizedBox(height: 1 * PdfPageFormat.mm),
-        Text('${customer.address}', softWrap: true),
-      ]);
-
-  // //supplier details
-  // static builtSupplier(customer customer) =>
-  //     Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-  //       Text("suppilerName", style: TextStyle(fontWeight: FontWeight.bold)),
-  //       SizedBox(height: 1 * PdfPageFormat.mm),
-  //       Text("suppilerAddress"),
-  //       Text("No. 0949687830", style: const TextStyle(fontSize: 10))
-  //     ]);
-
-  //heading
-  static builtTile(Customer customer) =>
-      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        SizedBox(height: 10),
-        Text("customer".toUpperCase(),
-            style: TextStyle(fontSize: 20, fontBold: Font.courier())),
-        SizedBox(height: 10),
-        Text("Description"),
-      ]);
-
-//customer information
-  static builtItemTable(Customer customer) {
-    final headers = [
-      "Item",
-      "Price",
-      "Food Type[Veg/Non]",
-      "No of Adults & childs",
-      "Total Amount"
-    ];
-    final data = [
-      [
-        "Lonawala",
-        customer.price,
-        '${customer.vegPeopleCount}/${customer.nonVegPeopleCount}',
-        '${customer.adult},${customer.child}',
-        ((customer.price * customer.adult) +
-            ((customer.price / 0.8) * customer.child))
-      ]
-    ];
-    return Table.fromTextArray(
-        headers: headers,
-        data: data,
-        border: null,
-        headerAlignment: Alignment.center,
-        headerStyle: TextStyle(fontWeight: FontWeight.bold),
-        headerDecoration: const BoxDecoration(color: PdfColors.grey300),
-        cellAlignments: {
-          0: Alignment.centerLeft,
-          1: Alignment.centerRight,
-          2: Alignment.centerLeft,
-          3: Alignment.centerRight,
-          4: Alignment.centerRight
-        });
-  }
-
-  //built total secton
-  static builtTotal(Customer customer) {
-    final total =
-        ((customer.price * customer.adult) + (customer.price * customer.child));
-    final adv = customer.price / 1.25;
-    final rem = (total - adv).toStringAsFixed(2);
-    return Container(
-        child: Row(children: [
-      Spacer(flex: 6),
-      Expanded(
-          flex: 4,
-          child: Column(children: [
-            builtText(
-                title: "Total Amount", value: total.toString(), unite: true),
-            builtText(title: "Advance", value: adv.toString(), unite: true),
-            Divider(),
-            builtText(title: "Remaining", value: rem.toString()),
-            Divider()
-          ]))
-    ]));
-  }
-
-//built Text
-  static builtText(
-      {required String title,
-      required String value,
-      double width = double.infinity,
-      TextStyle? titleStyle,
-      bool unite = false}) {
-    final style = titleStyle ?? TextStyle(fontWeight: FontWeight.bold);
-    return Container(
-        width: width,
-        child: Row(children: [
-          Expanded(child: Text(title, style: style)),
-          Text(value, style: unite ? style : null)
-        ]));
-  }
-
-//create footer of pdf
-  static buildFooter(Customer customer) =>
-      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Divider(),
-        SizedBox(height: 10),
-        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Text("Address: ", style: TextStyle(fontWeight: FontWeight.bold)),
-          SizedBox(width: 2 * PdfPageFormat.mm),
-          Text("Surat")
-        ]),
-        SizedBox(height: 5),
-        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Text("Paypal", style: TextStyle(fontWeight: FontWeight.bold)),
-          SizedBox(width: 2 * PdfPageFormat.mm),
-          Text("https://payapal.me/sarahfieldzz")
-        ]),
-      ]);
 }
+
+header() => Container(
+    alignment: Alignment.center,
+    child: Column(children: [
+      Text("Pawna Camp",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+      SizedBox(height: 10),
+      Text(
+          "Biling Address:S. No 59, at. Ambegaon, Beside PawnaNagar, Lonavala Rd, O,Pawna Nagar, Pune, Maharastra, 410406",
+          style: const TextStyle(fontSize: 8)),
+      SizedBox(height: 10),
+      builtBarcode(),
+      Divider()
+    ]));
+
+builtBarcode() => Row(children: [
+      Expanded(
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text("Invoice of Booking", style: const TextStyle(fontSize: 12)),
+        SizedBox(height: 5),
+        Text("Email: contact@pawnacamp.in"),
+        Text("Mobile: +91 7575829797"),
+        Text("Other: +91 9922664660")
+      ])),
+      SizedBox(width: 20),
+      Expanded(
+          child: Row(children: [
+        BarcodeWidget(
+            data: '7575829797',
+            barcode: Barcode.qrCode(),
+            width: 50,
+            height: 50),
+        SizedBox(width: 10),
+        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          text("Invoice Id", "209df0342"),
+          text("Date:", "2023-05-19"),
+          text("Order Id:", "PO49326423942")
+        ])
+      ]))
+    ]);
+
+formTo(Customer customer) =>
+    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+      Expanded(
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text("Form :",
+            style: TextStyle(fontBold: Font.courierBold(), fontSize: 13)),
+        SizedBox(height: 10),
+        text("Address: ",
+            "Biling Address:S. No 59, at.Ambegaon, Beside PawnaNagar, Lonavala Rd, O,Pawna Nagar, Pune, Maharastra, 410406"),
+        SizedBox(height: 3),
+        text("Contact: ", "+91 7575829797")
+      ])),
+      SizedBox(width: 5),
+      Expanded(
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text("Customer :",
+            style: TextStyle(fontBold: Font.courierBold(), fontSize: 13)),
+        SizedBox(height: 10),
+        text('Customer ID:', customer.id.toString()),
+        text("Customer Name:", customer.name),
+        text("Address:", customer.address),
+        text("Booking Date:", customer.bookingDate),
+        text("Mode:", "Online"),
+      ]))
+    ]);
+
+text(label, value) => Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              softWrap: true,
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+          SizedBox(width: 5),
+          SizedBox(
+              width: 150,
+              child: Text(
+                value,
+                softWrap: true,
+                style: const TextStyle(fontSize: 11),
+              )),
+          SizedBox(height: 3)
+        ]);
+
+builtItemTable(Customer customer) {
+  final headers = [
+    "Item",
+    "Fee",
+    "No of Adults & childs",
+    "GroupType",
+    "Total Amount"
+  ];
+  final data = [
+    [
+      "Lonawala",
+      customer.price.toString(),
+      "${customer.adult},${customer.child}",
+      customer.groupType,
+      (customer.price * customer.adult +
+              ((customer.price * 0.45) * customer.child))
+          .toString()
+    ]
+  ];
+  return Table.fromTextArray(
+      headers: headers,
+      data: data,
+      border: null,
+      headerAlignment: Alignment.center,
+      headerStyle: TextStyle(fontWeight: FontWeight.bold),
+      headerDecoration: const BoxDecoration(color: PdfColors.grey300),
+      cellAlignments: {
+        0: Alignment.centerLeft,
+        1: Alignment.centerRight,
+        2: Alignment.centerLeft,
+        3: Alignment.centerRight,
+        4: Alignment.centerRight
+      });
+}
+
+builtTotal(Customer customer) {
+  final total = (customer.price * customer.adult +
+      ((customer.price * 0.45) * customer.child));
+  final adv = customer.advAmt;
+  final rem = (total - adv).toStringAsFixed(2);
+  return Container(
+      child: Row(children: [
+    Spacer(flex: 6),
+    Expanded(
+        flex: 4,
+        child: Column(children: [
+          text("Total Amount", total.toString()),
+          text("Advance", customer.advAmt.toString()),
+          Divider(color: PdfColors.black),
+          text("Remaining", rem.toString()),
+          Divider(color: PdfColors.black),
+        ]))
+  ]));
+}
+
+builtTerms() => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text("Terms & Condition",
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+      SizedBox(height: 3),
+      Text("1) Cancelation Will be accepted before 2 days.",
+          style: const TextStyle(fontSize: 10)),
+      SizedBox(height: 3),
+      Text(
+          "2) Cancelation charges will be 15% in case you cancel on last booking date.",
+          style: const TextStyle(fontSize: 10)),
+      SizedBox(height: 3),
+      Text(
+          "3) Due to any external issues if event get cancel we will refund all the booking amount.",
+          style: const TextStyle(fontSize: 10))
+    ]);

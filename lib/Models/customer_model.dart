@@ -46,7 +46,7 @@ class Customer {
       groupType: json['groupType'],
       price: json['price'] ?? 0,
       ticketFlag: json['ticketFlag'],
-      advAmt: json['advAmt'] ?? 0,
+      advAmt: json['advanceAmount'] ?? 0,
     );
   }
 

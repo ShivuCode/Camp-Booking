@@ -1,484 +1,293 @@
-import 'package:camp_booking/Models/customer_model.dart';
-import 'package:camp_booking/Services/ApiService.dart';
-import 'package:camp_booking/constant.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'dart:async';
 
-class SearchPage extends StatefulWidget {
-  const SearchPage({Key? key}) : super(key: key);
+import 'package:camp_booking/Models/customer_model.dart';
+import 'package:camp_booking/Pages/CAMP/campList.dart';
+import 'package:camp_booking/Pages/pdfView.dart';
+import 'package:camp_booking/Responsive_Layout/responsiveWidget.dart';
+import 'package:camp_booking/Services/pdf.dart';
+import 'package:camp_booking/Widgets/skelton.dart';
+import 'package:camp_booking/constant.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import '../../Models/camp_model.dart';
+import '../../Responsive_Layout/responsive_layout.dart';
+import '../../Services/ApiService.dart';
+import '../HOME/laptopHomeScreen.dart';
+import '../HOME/mobileHomeScreen.dart';
+import '../HOME/tabletHomeScreen.dart';
+
+class Invoice extends StatefulWidget {
+  const Invoice({super.key});
 
   @override
-  State<SearchPage> createState() => _SearchPageState();
+  State<Invoice> createState() => _InvoiceState();
 }
 
-class _SearchPageState extends State<SearchPage> {
-  TextEditingController idController = TextEditingController(),
-      nameController = TextEditingController(),
-      bookingDateController = TextEditingController(),
-      adultController = TextEditingController(),
-      childController = TextEditingController(),
-      typeController = TextEditingController(),
-      priceController = TextEditingController(),
-      totalController = TextEditingController(),
-      email = TextEditingController(),
-      address = TextEditingController(),
-      noVeg = TextEditingController(),
-      nonVeg = TextEditingController(),
-      advAmt = TextEditingController(),
-      mobile = TextEditingController();
-
-  TextEditingController searchId = TextEditingController(),
-      searchName = TextEditingController();
-
-  List<Customer> findCustomer = [];
+class _InvoiceState extends State<Invoice> {
+  Camp camp = campList[3];
   List<Customer> customers = [];
+  List<Customer> temp = [];
 
+  TextEditingController _searchController = TextEditingController();
+  int page = 0;
+  bool isLoad = true;
+  bool showNoContent = false;
   void fetchData() async {
-    final data = await ApiService.fetchData();
-
+    final data = await ApiService.fetchDataPage(page);
     for (var element in data) {
-      Customer customer = Customer.fromJson(element);
       setState(() {
-        customers.add(customer);
-        findCustomer.add(customer);
+        customers.add(Customer.fromJson(element));
       });
     }
-  }
-
-  void findById(value) async {
-    findCustomer = [];
-    final data = await ApiService.findByID(int.parse(value));
-    if (data.isNotEmpty) {
-      setState(() {
-        findCustomer.add(Customer.fromJson(data));
-      });
-    }
+    temp = customers;
   }
 
   @override
   void initState() {
     fetchData();
+    Future.delayed(const Duration(milliseconds: 300), () {
+      setState(() {
+        isLoad = false;
+      });
+    });
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
     return Scaffold(
-      body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            height(20),
-            Padding(
-              padding: const EdgeInsets.only(left: 30),
-              child: Text(
-                "Customers ${customers.length}",
-                style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 1),
-              ),
-            ),
-            height(15),
+        body: RawKeyboardListener(
+      focusNode: FocusNode(),
+      onKey: (event) {
+        if (event.isKeyPressed(LogicalKeyboardKey.enter)) {
+          setState(() {
+            showNoContent = false;
+          });
+          if (_searchController.text.isNotEmpty) {
+            chechData(_searchController.text);
+          } else {
+            customers = temp;
+          }
+        }
+      },
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Text("All Camp Bookings",
+                style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700)),
+            height(10),
             Container(
               alignment: Alignment.center,
-              margin: const EdgeInsets.only(left: 30),
-              height: 40,
-              child: TextField(
-                onChanged: (v) {
-                  if (v.isNotEmpty) {
-                    findById(v);
-                  }
-                },
-                controller: searchId,
-                textAlignVertical: TextAlignVertical.center,
-                decoration: const InputDecoration(
-                  contentPadding: EdgeInsets.only(left: 10, bottom: 5),
-                  hintText: 'Search by customer id ex. 1023',
-                  hintStyle: TextStyle(fontSize: 14),
-                  prefixIcon: Icon(Icons.search, color: Colors.grey, size: 20),
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-            Expanded(
-                child: Container(
-              margin: const EdgeInsets.only(
-                  left: 30, right: 30, bottom: 30, top: 10),
               decoration: BoxDecoration(
-                  border: Border.all(
-                      color: const Color.fromARGB(31, 177, 162, 162)),
-                  borderRadius: BorderRadius.circular(10)),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: DataTable(
-                      columns: header(),
-                      rows: rows(),
-                    )),
+                color: Colors.white,
+                border: Border.all(color: mainColor, width: 0.3),
+                borderRadius: BorderRadius.circular(6),
               ),
-            )),
-          ]),
-    );
-  }
-
-  header() {
-    List headers = [
-      "Id",
-      "Customer Name ",
-      "Address",
-      "Mobile No.",
-      "Booking Date",
-      "Person",
-      "Price",
-      "Total",
-      ""
-    ];
-    return List.generate(
-      headers.length,
-      (index) => DataColumn(label: Text(headers[index])),
-    );
-  }
-
-  rows() {
-    return customers.isEmpty
-        ? [
-            DataRow(
-                cells: List.generate(9, (index) => const DataCell(Text(""))))
-          ]
-        : List.generate(findCustomer.length, (i) {
-            double total = customers[i].price * customers[i].adult +
-                customers[i].price * 0.45 * customers[i].child;
-            return DataRow(cells: [
-              DataCell(
-                Container(
-                  width: 100,
-                  height: 35,
-                  alignment: Alignment.centerLeft,
-                  child: Text(findCustomer[i].id.toString()),
-                ),
-              ),
-              DataCell(
-                Container(
-                  alignment: Alignment.centerLeft,
-                  width: 150,
-                  height: 35,
-                  child: Text(findCustomer[i].name),
-                ),
-              ),
-              DataCell(
-                Container(
-                  alignment: Alignment.centerLeft,
-                  width: 150,
-                  height: 35,
-                  child: Text(findCustomer[i].address),
-                ),
-              ),
-              DataCell(
-                Container(
-                  alignment: Alignment.centerLeft,
-                  width: 150,
-                  height: 35,
-                  child: Text(findCustomer[i].mobNo),
-                ),
-              ),
-              DataCell(
-                Container(
-                  alignment: Alignment.center,
-                  width: 150,
-                  height: 35,
-                  child: Text(findCustomer[i].bookingDate),
-                ),
-              ),
-              DataCell(
-                Container(
-                  alignment: Alignment.center,
-                  width: 100,
-                  height: 35,
-                  child: Text((findCustomer[i].adult + findCustomer[i].child)
-                      .toString()),
-                ),
-              ),
-              DataCell(
-                Container(
-                  alignment: Alignment.centerRight,
-                  width: 120,
-                  height: 35,
-                  child: Text(findCustomer[i].price.toString()),
-                ),
-              ),
-              DataCell(
-                Container(
-                  alignment: Alignment.centerRight,
-                  width: 120,
-                  height: 35,
-                  child: Text(total.toString()),
-                ),
-              ),
-              DataCell(
-                Container(
-                  alignment: Alignment.centerLeft,
-                  height: 35,
-                  child: Row(
-                    children: [
-                      IconButton(
-                          splashRadius: 15,
-                          onPressed: () {
-                            setState(() {
-                              idController.text = findCustomer[i].id.toString();
-                              bookingDateController.text =
-                                  findCustomer[i].bookingDate.toString();
-                              nameController.text = findCustomer[i].name;
-                              adultController.text =
-                                  findCustomer[i].adult.toString();
-                              childController.text =
-                                  findCustomer[i].child.toString();
-                              typeController.text =
-                                  findCustomer[i].groupType.toString();
-                              priceController.text =
-                                  findCustomer[i].price.toString();
-                              totalController.text = total.toString();
-                              email.text = findCustomer[i].email;
-                              mobile.text = findCustomer[i].mobNo;
-                              address.text = findCustomer[i].address;
-                              advAmt.text = findCustomer[i].advAmt.toString();
-                              noVeg.text =
-                                  findCustomer[i].vegPeopleCount.toString();
-                              nonVeg.text =
-                                  findCustomer[i].nonVegPeopleCount.toString();
-                            });
-                            editBox(context, i);
-                            findCustomer = [];
-                            customers = [];
-                            fetchData();
-                          },
-                          icon: const Icon(
-                            Icons.edit,
-                            size: 15,
-                          ))
-                    ],
-                  ),
-                ),
-              )
-            ]);
-          });
-  }
-
-  editBox(BuildContext context, i) {
-    showDialog(
-      barrierDismissible: false,
-      context: context,
-      builder: (BuildContext context) {
-        InputDecoration decorat(lable) {
-          return InputDecoration(
-            labelText: lable,
-            border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(5),
-                borderSide: const BorderSide(color: Colors.grey)),
-            enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(5),
-                borderSide: const BorderSide(color: Colors.grey)),
-            focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(5),
-                borderSide: const BorderSide(color: Colors.grey)),
-            errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(5),
-                borderSide: const BorderSide(color: Colors.grey)),
-          );
-        }
-
-        Size size = MediaQuery.of(context).size;
-
-        return AlertDialog(
-          title: const Text('Edit Customer'),
-          content: Container(
-            alignment: Alignment.center,
-            width: size.width > 600 ? 600 : double.infinity,
-            height: size.height < 600 ? size.height * 0.5 : 400,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: Wrap(
+              child: Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(5),
-                    width: 300,
-                    child: TextFormField(
-                        controller: idController, decoration: decorat("Id")),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(5),
-                    width: 300,
-                    child: TextFormField(
-                        controller: nameController,
-                        decoration: decorat("Name")),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(5),
-                    width: 300,
-                    child: TextFormField(
-                        controller: address, decoration: decorat("Address")),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(5),
-                    width: 300,
-                    child: TextFormField(
-                        controller: mobile, decoration: decorat("Mobile No")),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(5),
-                    width: 300,
-                    child: TextFormField(
-                        controller: bookingDateController,
-                        decoration: decorat("Booking Date")),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(5),
-                    width: 300,
-                    child: TextFormField(
-                      controller: adultController,
-                      decoration: decorat(
-                        'Adult',
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        prefixIcon: Icon(Icons.search),
+                        prefixIconColor: mainColor,
+                        hintText: 'Search',
                       ),
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.all(5),
-                    width: 300,
-                    child: TextFormField(
-                      controller: childController,
-                      decoration: decorat(
-                        'Child',
+                  GestureDetector(
+                    onTap: () {
+                      if (_searchController.text.isNotEmpty) {
+                        chechData(_searchController.text);
+                      } else {
+                        customers = temp;
+                      }
+                    },
+                    child: Container(
+                      width: 60,
+                      height: 50,
+                      decoration: const BoxDecoration(
+                        color: mainColor,
+                        borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(6),
+                            bottomRight: Radius.circular(6)),
+                      ),
+                      child: const Icon(
+                        Icons.line_axis,
+                        color: Colors.white,
                       ),
                     ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(5),
-                    width: 300,
-                    child: TextFormField(
-                        controller: noVeg,
-                        decoration: decorat("No. of Veg People")),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(5),
-                    width: 300,
-                    child: TextFormField(
-                        controller: nonVeg,
-                        decoration: decorat("No. of Non-Veg people")),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(5),
-                    width: 300,
-                    child: TextFormField(
-                      controller: typeController,
-                      decoration: decorat(
-                        'groupType',
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(5),
-                    width: 300,
-                    child: TextFormField(
-                      onChanged: (v) => () {
-                        try {
-                          double a = double.parse(adultController.text) *
-                                  double.parse(
-                                      priceController.text.toString()) +
-                              double.parse(childController.text) *
-                                  (double.parse(
-                                          priceController.text.toString()) *
-                                      0.45);
-                          setState(() {
-                            totalController.text = a.toString();
-                          });
-                        } catch (e) {}
-                      }(),
-                      controller: priceController,
-                      decoration: decorat(
-                        'Price',
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(5),
-                    width: 300,
-                    child: TextFormField(
-                      controller: advAmt,
-                      decoration: decorat(
-                        'Advance Amount',
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(5),
-                    width: 300,
-                    child: TextFormField(
-                      enabled: false,
-                      controller: totalController,
-                      decoration: decorat(
-                        'Total',
-                      ),
-                    ),
-                  ),
+                  )
                 ],
               ),
             ),
-          ),
-          actions: [
-            OutlinedButton(
-                style: ButtonStyle(
-                    minimumSize:
-                        MaterialStateProperty.all(const Size(120, 40))),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text(
-                  "Cancel",
-                  style: TextStyle(color: Colors.grey),
-                )),
-            ElevatedButton(
-              style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all(Colors.blueGrey),
-                  minimumSize: MaterialStateProperty.all(const Size(120, 40))),
-              onPressed: () {
-                // Save the edited values
-                setState(() {
-                  findCustomer[i].id = int.parse(idController.text);
-                  findCustomer[i].name = nameController.text;
-                  findCustomer[i].bookingDate = bookingDateController.text;
-                  findCustomer[i].adult = int.parse(adultController.text);
-                  findCustomer[i].child = int.parse(childController.text);
-                  findCustomer[i].groupType = typeController.text;
-                  findCustomer[i].address = address.text;
-                  findCustomer[i].price = int.parse(priceController.text);
-                  findCustomer[i].nonVegPeopleCount = int.parse(nonVeg.text);
-                  findCustomer[i].vegPeopleCount = int.parse(nonVeg.text);
-                  findCustomer[i].mobNo = mobile.text;
-                });
-                ApiService.update(findCustomer[i]);
+            height(10),
+            showNoContent
+                ? Container(
+                    alignment: Alignment.center,
+                    width: size.width * 0.9,
+                    height: size.height * 0.7,
+                    child: const Text("No Content"))
+                : isLoad
+                    ? ResponsiveForm.responsiveForm(
+                        children: List.generate(5, (index) => ListSkeleton()))
+                    : ResponsiveForm.responsiveForm(
+                        children: List.generate(customers.length, (i) {
+                        final total = (customers[i].price * customers[i].adult +
+                            ((customers[i].price * 0.45) * customers[i].child));
 
-                Navigator.of(context).pop();
-              },
-              child: const Text(
-                'Save',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-    void total() {
-      try {
-        double a = double.parse(adultController.text) *
-                double.parse(priceController.text.toString()) +
-            double.parse(childController.text) *
-                (double.parse(priceController.text.toString()) * 0.45);
-        setState(() {
-          totalController.text = a.toString();
-        });
-      } catch (e) {}
+                        return Container(
+                          width: 270,
+                          padding: const EdgeInsets.only(
+                              top: 10, left: 10, right: 10),
+                          child: Column(
+                            children: [
+                              Row(children: [
+                                Container(
+                                  height: 100,
+                                  width: 100,
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8),
+                                      image: DecorationImage(
+                                          onError: (exception, stackTrace) =>
+                                              {},
+                                          image: NetworkImage(camp.imageUrl),
+                                          fit: BoxFit.cover)),
+                                ),
+                                width(8),
+                                Expanded(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text("id: ${customers[i].id}",
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.w400,
+                                              fontSize: 14)),
+                                      height(3),
+                                      Text(customers[i].name,
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.w400,
+                                              fontSize: 14)),
+                                      height(8),
+                                      const Text(
+                                        "Beautiful Couple Camping With Decoration light, food & support.",
+                                        softWrap: true,
+                                      ),
+                                      height(10),
+                                      Text("Total: ₹ $total",
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.black))
+                                    ],
+                                  ),
+                                )
+                              ]),
+                              height(10),
+                              Row(
+                                children: [
+                                  Expanded(
+                                      child: ElevatedButton(
+                                    onPressed: () {
+                                      nextReplacement(
+                                          context,
+                                          ResponsiveLayout(
+                                              mobileScaffold: MobileHomeScreen(
+                                                pos: 'booking',
+                                                customer: customers[i],
+                                              ),
+                                              tabletScaffold: TabletHomeScreen(
+                                                  pos: 'booking',
+                                                  customer: customers[i]),
+                                              laptopScaffold: LaptopHomeScreen(
+                                                  pos: 'booking',
+                                                  customer: customers[i])));
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                        primary: mainColor,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                        minimumSize: const Size(120, 35)),
+                                    child: const Text('Edit'),
+                                  )),
+                                  width(5),
+                                  Expanded(
+                                      child: ElevatedButton(
+                                    onPressed: () async {
+                                      String path =
+                                          await PdfService.generatePDF(
+                                              customers[i]);
+                                      nextScreen(
+                                          context, PdfViewer(path: path));
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                        primary: mainColor,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                        minimumSize: const Size(120, 35)),
+                                    child: const Text('View Invoice'),
+                                  ))
+                                ],
+                              ),
+                              height(5),
+                              const Divider(),
+                            ],
+                          ),
+                        );
+                      }))
+          ]),
+        ),
+      ),
+    ));
+  }
+
+  // void scrollController() {
+  //   if (_scrollController.position.hasPixels ==
+  //       _scrollController.position.maxScrollExtent) {
+  //     page = page + 1;
+  //     ApiService.fetchDataPage(page);
+  //   }
+  // }
+
+  void chechData(value) async {
+    setState(() {
+      isLoad = true;
+    });
+
+    int? intValue = int.tryParse(value);
+    double? doubleValue = double.tryParse(value);
+
+    if (intValue != null) {
+      final data = await ApiService.findByID(intValue);
+      if (data.isNotEmpty) {
+        customers = [];
+        customers.add(Customer.fromJson(data));
+      } else {
+        showNoContent = true;
+      }
+    } else if (doubleValue != null) {
+    } else {
+      final data = await ApiService.findByName(value);
+      if (data.isNotEmpty) {
+        customers = [];
+        customers.add(Customer.fromJson(data[0]));
+      } else {
+        showNoContent = true;
+      }
     }
+    setState(() {
+      isLoad = !isLoad;
+    });
   }
 }
