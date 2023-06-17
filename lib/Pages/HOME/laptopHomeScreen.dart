@@ -7,7 +7,7 @@ import 'package:camp_booking/constant.dart';
 import 'package:flutter/material.dart';
 
 import '../../Widgets/booking.dart';
-import '../../Widgets/campt.dart';
+import '../CAMP/campt.dart';
 
 // ignore: must_be_immutable
 class LaptopHomeScreen extends StatelessWidget {

@@ -2,7 +2,7 @@ import 'package:camp_booking/Models/camp_model.dart';
 import 'package:camp_booking/Models/customer_model.dart';
 import 'package:camp_booking/constant.dart';
 import '../../Widgets/booking.dart';
-import '../../Widgets/campt.dart';
+import '../CAMP/campt.dart';
 import 'package:flutter/material.dart';
 
 import '../SEARCH/search.dart';

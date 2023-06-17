@@ -13,12 +13,14 @@ class PdfService {
       final pdf = Document();
       pdf.addPage(MultiPage(
         header: (context) => header(),
+        footer: (context) => footer(),
         build: (context) => [
-          SizedBox(height: 20),
+          SizedBox(height: 30),
           formTo(customer),
-          SizedBox(height: 20),
+          SizedBox(height: 30),
           builtItemTable(customer),
           Divider(),
+          SizedBox(height: 10),
           Row(children: [
             Expanded(child: builtTerms()),
             Expanded(child: builtTotal(customer)),
@@ -60,15 +62,27 @@ header() => Container(
       Divider()
     ]));
 
+footer() => Container(
+        child: Column(children: [
+      Divider(color: PdfColors.black, thickness: 0.3),
+      SizedBox(height: 10),
+      Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Text("Website link: "),
+        Text("https://pawnacamp.in",
+            style: const TextStyle(color: PdfColors.blue))
+      ]),
+      Text("Contact: 9922664640")
+    ]));
+
 builtBarcode() => Row(children: [
       Expanded(
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text("Invoice of Booking", style: const TextStyle(fontSize: 12)),
+        Text("Invoice of Booking",
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
         SizedBox(height: 5),
         Text("Email: contact@pawnacamp.in"),
-        Text("Mobile: +91 7575829797"),
-        Text("Other: +91 9922664660")
+        Text("Mobile: +91 9922664660")
       ])),
       SizedBox(width: 20),
       Expanded(
@@ -80,7 +94,6 @@ builtBarcode() => Row(children: [
             height: 50),
         SizedBox(width: 10),
         Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          text("Invoice Id", "209df0342"),
           text("Date:", "2023-05-19"),
           text("Order Id:", "PO49326423942")
         ])
@@ -98,7 +111,7 @@ formTo(Customer customer) =>
         text("Address: ",
             "Biling Address:S. No 59, at.Ambegaon, Beside PawnaNagar, Lonavala Rd, O,Pawna Nagar, Pune, Maharastra, 410406"),
         SizedBox(height: 3),
-        text("Contact: ", "+91 7575829797")
+        text("Contact: ", "+91 9922664660")
       ])),
       SizedBox(width: 5),
       Expanded(
@@ -107,9 +120,9 @@ formTo(Customer customer) =>
         Text("Customer :",
             style: TextStyle(fontBold: Font.courierBold(), fontSize: 13)),
         SizedBox(height: 10),
-        text('Customer ID:', customer.id.toString()),
-        text("Customer Name:", customer.name),
-        text("Address:", customer.address),
+        text('Customer ID: ', customer.id.toString()),
+        text("Customer Name: ", customer.name),
+        text("Address: ", customer.address),
         text("Booking Date:", customer.bookingDate),
         text("Mode:", "Online"),
       ]))
@@ -130,7 +143,7 @@ text(label, value) => Row(
                 softWrap: true,
                 style: const TextStyle(fontSize: 11),
               )),
-          SizedBox(height: 3)
+          SizedBox(height: 5)
         ]);
 
 builtItemTable(Customer customer) {

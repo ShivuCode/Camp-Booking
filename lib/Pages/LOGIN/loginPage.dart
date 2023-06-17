@@ -51,8 +51,7 @@ class _LoginPageState extends State<LoginPage> {
                         Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.android,
-                                color: mainColor, size: 100),
+                            const Icon(Icons.home, color: mainColor, size: 100),
                             const Text("Login to Account",
                                 style: TextStyle(
                                     fontSize: 30,

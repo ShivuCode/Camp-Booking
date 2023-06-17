@@ -3,10 +3,10 @@ import 'package:camp_booking/Pages/CAMP/campList.dart';
 import 'package:camp_booking/Responsive_Layout/responsive_layout.dart';
 import 'package:camp_booking/Widgets/skelton.dart';
 import 'package:flutter/material.dart';
-import '../Pages/HOME/laptopHomeScreen.dart';
-import '../Pages/HOME/mobileHomeScreen.dart';
-import '../Pages/HOME/tabletHomeScreen.dart';
-import '../constant.dart';
+import '../HOME/laptopHomeScreen.dart';
+import '../HOME/mobileHomeScreen.dart';
+import '../HOME/tabletHomeScreen.dart';
+import '../../constant.dart';
 
 class campTile extends StatefulWidget {
   const campTile({super.key});

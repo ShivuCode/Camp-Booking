@@ -33,6 +33,7 @@ class _InvoiceState extends State<Invoice> {
   int page = 0;
   bool isLoad = true;
   bool showNoContent = false;
+  bool showMore = false;
   void fetchData() async {
     final data = await ApiService.fetchDataPage(page);
     for (var element in data) {
@@ -152,132 +153,143 @@ class _InvoiceState extends State<Invoice> {
                           child: ListView.builder(
                               scrollDirection: Axis.vertical,
                               controller: scrollController,
-                              itemCount: customers.length,
+                              itemCount: showMore
+                                  ? customers.length + 1
+                                  : customers.length,
                               itemBuilder: (_, i) {
-                                final total =
-                                    (customers[i].price * customers[i].adult +
-                                        ((customers[i].price * 0.45) *
-                                            customers[i].child));
+                                if (i < customers.length) {
+                                  final total =
+                                      (customers[i].price * customers[i].adult +
+                                          ((customers[i].price * 0.45) *
+                                              customers[i].child));
 
-                                return Container(
-                                  width: 270,
-                                  padding: const EdgeInsets.only(
-                                      top: 10, left: 10, right: 10),
-                                  child: Column(
-                                    children: [
-                                      Row(children: [
-                                        Container(
-                                          height: 100,
-                                          width: 100,
-                                          decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              image: DecorationImage(
-                                                  onError:
-                                                      (exception, stackTrace) =>
-                                                          {},
-                                                  image: NetworkImage(
-                                                      camp.imageUrl),
-                                                  fit: BoxFit.cover)),
-                                        ),
-                                        width(8),
-                                        Expanded(
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text("id: ${customers[i].id}",
-                                                  style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w400,
-                                                      fontSize: 14)),
-                                              height(3),
-                                              Text(customers[i].name,
-                                                  style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w400,
-                                                      fontSize: 14)),
-                                              height(8),
-                                              const Text(
-                                                "Beautiful Couple Camping With Decoration light, food & support.",
-                                                softWrap: true,
-                                              ),
-                                              height(10),
-                                              Text("Total: ₹ $total",
-                                                  style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      color: Colors.black))
-                                            ],
+                                  return Container(
+                                    width: 270,
+                                    padding: const EdgeInsets.only(
+                                        top: 10, left: 10, right: 10),
+                                    child: Column(
+                                      children: [
+                                        Row(children: [
+                                          Container(
+                                            height: 100,
+                                            width: 100,
+                                            decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                                image: DecorationImage(
+                                                    onError: (exception,
+                                                            stackTrace) =>
+                                                        {},
+                                                    image: NetworkImage(
+                                                        camp.imageUrl),
+                                                    fit: BoxFit.cover)),
                                           ),
-                                        )
-                                      ]),
-                                      height(10),
-                                      Row(
-                                        children: [
+                                          width(8),
                                           Expanded(
-                                              child: ElevatedButton(
-                                            onPressed: () {
-                                              nextReplacement(
-                                                  context,
-                                                  ResponsiveLayout(
-                                                      mobileScaffold:
-                                                          MobileHomeScreen(
-                                                        pos: 'booking',
-                                                        customer: customers[i],
-                                                      ),
-                                                      tabletScaffold:
-                                                          TabletHomeScreen(
-                                                              pos: 'booking',
-                                                              customer:
-                                                                  customers[i]),
-                                                      laptopScaffold:
-                                                          LaptopHomeScreen(
-                                                              pos: 'booking',
-                                                              customer:
-                                                                  customers[
-                                                                      i])));
-                                            },
-                                            style: ElevatedButton.styleFrom(
-                                                primary: mainColor,
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text("id: ${customers[i].id}",
+                                                    style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w400,
+                                                        fontSize: 14)),
+                                                height(3),
+                                                Text(customers[i].name,
+                                                    style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w400,
+                                                        fontSize: 14)),
+                                                height(8),
+                                                const Text(
+                                                  "Beautiful Couple Camping With Decoration light, food & support.",
+                                                  softWrap: true,
                                                 ),
-                                                minimumSize:
-                                                    const Size(120, 35)),
-                                            child: const Text('Edit'),
-                                          )),
-                                          width(5),
-                                          Expanded(
-                                              child: ElevatedButton(
-                                            onPressed: () async {
-                                              String path =
-                                                  await PdfService.generatePDF(
-                                                      customers[i]);
-                                              if (path.isNotEmpty) {
-                                                nextScreen(context,
-                                                    PdfViewer(path: path));
-                                              }
-                                            },
-                                            style: ElevatedButton.styleFrom(
-                                                primary: mainColor,
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                ),
-                                                minimumSize:
-                                                    const Size(120, 35)),
-                                            child: const Text('View Invoice'),
-                                          ))
-                                        ],
-                                      ),
-                                      height(5),
-                                      const Divider(),
-                                    ],
-                                  ),
-                                );
+                                                height(10),
+                                                Text("Total: ₹ $total",
+                                                    style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color: Colors.black))
+                                              ],
+                                            ),
+                                          )
+                                        ]),
+                                        height(10),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                                child: ElevatedButton(
+                                              onPressed: () {
+                                                nextReplacement(
+                                                    context,
+                                                    ResponsiveLayout(
+                                                        mobileScaffold:
+                                                            MobileHomeScreen(
+                                                          pos: 'booking',
+                                                          customer:
+                                                              customers[i],
+                                                        ),
+                                                        tabletScaffold:
+                                                            TabletHomeScreen(
+                                                                pos: 'booking',
+                                                                customer:
+                                                                    customers[
+                                                                        i]),
+                                                        laptopScaffold:
+                                                            LaptopHomeScreen(
+                                                                pos: 'booking',
+                                                                customer:
+                                                                    customers[
+                                                                        i])));
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                  primary: mainColor,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
+                                                  ),
+                                                  minimumSize:
+                                                      const Size(120, 35)),
+                                              child: const Text('Edit'),
+                                            )),
+                                            width(5),
+                                            Expanded(
+                                                child: ElevatedButton(
+                                              onPressed: () async {
+                                                String path = await PdfService
+                                                    .generatePDF(customers[i]);
+                                                if (path.isNotEmpty) {
+                                                  nextScreen(context,
+                                                      PdfViewer(path: path));
+                                                }
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                  primary: mainColor,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
+                                                  ),
+                                                  minimumSize:
+                                                      const Size(120, 35)),
+                                              child: const Text('View Invoice'),
+                                            ))
+                                          ],
+                                        ),
+                                        height(5),
+                                        const Divider(),
+                                      ],
+                                    ),
+                                  );
+                                } else {
+                                  const Center(
+                                      child: CircularProgressIndicator(
+                                          color: Colors.grey));
+                                }
                               }),
                         )
             ])),
@@ -290,9 +302,13 @@ class _InvoiceState extends State<Invoice> {
     if (scrollController.position.pixels ==
         scrollController.position.maxScrollExtent) {
       page += 1;
+      setState(() {
+        showMore = true;
+      });
       fetchData();
-    } else {
-      print("No call");
+      setState(() {
+        showMore = false;
+      });
     }
   }
 
