@@ -1,4 +1,4 @@
-import 'package:camp_booking/Services/pdfAndroid.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 
@@ -21,7 +21,7 @@ class PdfViewer extends StatelessWidget {
           IconButton(
               splashRadius: 23,
               onPressed: () {
-                share(path);
+                Share.shareFiles(['$path'], text: "Invoice of Booking Camp");
               },
               icon: const Icon(Icons.share, color: Colors.black))
         ],

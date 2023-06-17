@@ -497,7 +497,7 @@ class _BookingPageState extends State<BookingPage> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            minimumSize: Size(size * 0.4, 60)),
+                            minimumSize: Size(size * 0.4, 50)),
                         child: const Text('Cancel'),
                       )),
                       width(5),
@@ -549,7 +549,7 @@ class _BookingPageState extends State<BookingPage> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            minimumSize: Size(size * 0.4, 60)),
+                            minimumSize: Size(size * 0.4, 50)),
                         child: const Text('Save'),
                       ))
                     ],
@@ -628,7 +628,8 @@ class _BookingPageState extends State<BookingPage> {
                         ),
                         minimumSize: Size(size * 0.9, 60)),
                     child: const Text('Confirm'),
-                  )
+                  ),
+                height(5),
               ],
             ),
           ),

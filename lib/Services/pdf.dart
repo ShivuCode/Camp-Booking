@@ -1,7 +1,6 @@
 import 'dart:io';
-
-import 'package:downloads_path_provider_28/downloads_path_provider_28.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -12,7 +11,6 @@ class PdfService {
   static Future<String> generatePDF(Customer customer) async {
     if (await Permission.storage.request().isGranted) {
       final pdf = Document();
-
       pdf.addPage(MultiPage(
         header: (context) => header(),
         build: (context) => [
@@ -30,14 +28,19 @@ class PdfService {
         ],
       ));
 
-      final directory = await DownloadsPathProvider.downloadsDirectory;
-      final file = File('${directory!.path}/invoice.pdf');
+      final directory = (await getExternalStorageDirectories(
+              type: StorageDirectory.downloads))!
+          .first;
+      final file = File('${directory.path}/invoice.pdf');
+
       await file.writeAsBytes(await pdf.save());
-      Fluttertoast.showToast(msg: "Downloaded", gravity: ToastGravity.BOTTOM);
+
+      Fluttertoast.showToast(msg: "Download", gravity: ToastGravity.BOTTOM);
       return file.path;
     } else {
       Fluttertoast.showToast(
           msg: "We can't download", gravity: ToastGravity.BOTTOM);
+
       return '';
     }
   }
@@ -168,8 +171,7 @@ builtItemTable(Customer customer) {
 builtTotal(Customer customer) {
   final total = (customer.price * customer.adult +
       ((customer.price * 0.45) * customer.child));
-  final adv = customer.advAmt;
-  final rem = (total - adv).toStringAsFixed(2);
+  final rem = (total - customer.advAmt).toStringAsFixed(2);
   return Container(
       child: Row(children: [
     Spacer(flex: 6),

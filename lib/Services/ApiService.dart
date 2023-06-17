@@ -72,6 +72,7 @@ class ApiService {
   static Future<List> fetchDataPage(page) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String token = prefs.getString('token') ?? '';
+    
     final response = await http.get(
         Uri.parse(
             'https://titwi.in/api/customer/all?context=embed&per_page=2&page=$page'),
