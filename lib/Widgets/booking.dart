@@ -24,8 +24,10 @@ class BookingPage extends StatefulWidget {
 
 class _BookingPageState extends State<BookingPage> {
   String _selectedGroupType = 'Couple';
+  int _ticketFlag = 0;
   String _selectedDate = '';
   String date = '';
+  String _userActive = 'Disable';
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController(),
@@ -60,18 +62,28 @@ class _BookingPageState extends State<BookingPage> {
   }
 
   void _updateTotal() {
-    double total = ((double.parse(_priceController.text) *
-            double.parse(_adultController.text)) +
-        ((double.parse(_priceController.text) * 0.45) *
-            double.parse(_childController.text)));
+    if (_adultController.text.isNotEmpty &&
+        _childController.text.isNotEmpty &&
+        _priceController.text.isNotEmpty) {
+      double total = ((double.parse(_priceController.text) *
+              double.parse(_adultController.text)) +
+          ((double.parse(_priceController.text) * 0.45) *
+              double.parse(_childController.text)));
 
-    setState(() {
-      _totalController.text = total.toStringAsFixed(2);
-    });
+      setState(() {
+        _totalController.text = total.toStringAsFixed(2);
+      });
+    }
   }
 
   void initialized() {
     if (widget.customer != null) {
+      _ticketFlag = widget.customer!.ticketFlag;
+      if (_ticketFlag == 0) {
+        _userActive = "Enable";
+      } else {
+        _userActive = "Disable";
+      }
       _selectedDate = widget.customer!.bookingDate.substring(0, 10);
       date = widget.customer!.bookingDate;
       _nameController.text = widget.customer!.name;
@@ -101,6 +113,7 @@ class _BookingPageState extends State<BookingPage> {
     _emailController.dispose();
     _mobileController.dispose();
     _adultController.dispose();
+    _nameController.dispose();
     _childController.dispose();
     _noOfVegController.dispose();
     _noOfNonVegController.dispose();
@@ -281,7 +294,7 @@ class _BookingPageState extends State<BookingPage> {
                             foregroundColor:
                                 MaterialStateProperty.all(Colors.black),
                             textStyle: MaterialStateProperty.all(
-                                const TextStyle(fontSize: 18)),
+                                const TextStyle(fontSize: 15)),
                             minimumSize:
                                 MaterialStateProperty.all(const Size(250, 60)),
                             shape: MaterialStateProperty.all(
@@ -415,13 +428,48 @@ class _BookingPageState extends State<BookingPage> {
                       ),
                     ],
                   ),
-                  TextFormField(
-                    controller: _totalController,
-                    enabled: false,
-                    decoration: const InputDecoration(
-                      labelText: 'Total',
-                      border: OutlineInputBorder(),
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                            value: _userActive,
+                            onChanged: (newValue) {
+                              setState(() {
+                                if (newValue == 'Enaable') {
+                                  _ticketFlag = 0;
+                                  _userActive = "Enable";
+                                } else {
+                                  _ticketFlag = 1;
+                                  _userActive = "Disable";
+                                }
+                              });
+                            },
+                            decoration: const InputDecoration(
+                              labelText: 'User Active',
+                              border: OutlineInputBorder(),
+                            ),
+                            items: <String>[
+                              'Enable',
+                              'Disable',
+                            ].map<DropdownMenuItem<String>>((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList()),
+                      ),
+                      width(10),
+                      Expanded(
+                        child: TextFormField(
+                          controller: _totalController,
+                          enabled: false,
+                          decoration: const InputDecoration(
+                            labelText: 'Total',
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ]),
                 height(20),
@@ -475,7 +523,8 @@ class _BookingPageState extends State<BookingPage> {
                             widget.customer!.groupType = _selectedGroupType;
                             widget.customer!.price =
                                 int.parse(_priceController.text);
-                            print(widget.customer!.bookingDate);
+                            widget.customer!.ticketFlag = _ticketFlag;
+
                             if (await ApiService.update(widget.customer!)) {
                               Fluttertoast.showToast(
                                   msg: "Updated", gravity: ToastGravity.BOTTOM);
@@ -525,10 +574,10 @@ class _BookingPageState extends State<BookingPage> {
                             vegPeopleCount: int.parse(_noOfVegController.text),
                             nonVegPeopleCount:
                                 int.parse(_noOfNonVegController.text),
-                            bookingDate: "${_selectedDate}T00:00:00",
+                            bookingDate: date,
                             groupType: _selectedGroupType,
                             price: int.parse(_priceController.text),
-                            ticketFlag: 1,
+                            ticketFlag: _ticketFlag,
                             advAmt: int.parse(_advanceController.text));
                         if (await ApiService.addNew(customer)) {
                           // ignore: use_build_context_synchronously

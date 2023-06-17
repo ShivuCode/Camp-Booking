@@ -65,9 +65,6 @@ class ApiService {
       final jsonResponse = jsonDecode(response.body);
       return jsonResponse;
     } else {
-      if (kDebugMode) {
-        print("Error");
-      }
       return [];
     }
   }
@@ -123,9 +120,6 @@ class ApiService {
       final jsonResponse = jsonDecode(response.body);
       return jsonResponse;
     } else {
-      if (kDebugMode) {
-        print("Error");
-      }
       return {};
     }
   }
@@ -141,9 +135,6 @@ class ApiService {
       final jsonResponse = jsonDecode(response.body);
       return jsonResponse;
     } else {
-      if (kDebugMode) {
-        print("Error");
-      }
       return [];
     }
   }

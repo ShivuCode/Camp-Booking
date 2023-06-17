@@ -75,24 +75,6 @@ Widget myDrawer(context) {
                     pos: 'search',
                   )));
         },
-        leading: const Icon(Icons.person),
-        title: const Text("B O O K I N G S"),
-      ),
-      ListTile(
-        onTap: () {
-          nextReplacement(
-              context,
-              ResponsiveLayout(
-                  mobileScaffold: MobileHomeScreen(
-                    pos: 'search',
-                  ),
-                  tabletScaffold: TabletHomeScreen(
-                    pos: 'search',
-                  ),
-                  laptopScaffold: LaptopHomeScreen(
-                    pos: 'search',
-                  )));
-        },
         leading: const Icon(Icons.search),
         title: const Text("S E A R C H"),
       ),

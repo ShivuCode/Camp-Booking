@@ -1,3 +1,4 @@
+import 'package:camp_booking/Models/camp_model.dart';
 import 'package:camp_booking/Pages/CAMP/campList.dart';
 import 'package:camp_booking/Responsive_Layout/responsive_layout.dart';
 import 'package:camp_booking/Widgets/skelton.dart';
@@ -15,15 +16,32 @@ class campTile extends StatefulWidget {
 }
 
 class _campTileState extends State<campTile> {
+  TextEditingController _searchController = TextEditingController();
+  bool search = false;
   bool isLoad = true;
+  List<Camp> searchList = [];
   @override
   void initState() {
     Future.delayed(const Duration(milliseconds: 300), () {
       setState(() {
         isLoad = false;
+        searchList = campList;
       });
     });
     super.initState();
+  }
+
+  void findCamp(value) {
+    final data = campList.where((camp) =>
+        camp.location.toLowerCase().contains(value.toString().toLowerCase()));
+    if (data.isNotEmpty) {
+      searchList = [];
+      searchList.addAll(data);
+    } else {
+      setState(() {
+        search = false;
+      });
+    }
   }
 
   @override
@@ -50,9 +68,18 @@ class _campTileState extends State<campTile> {
               ),
               child: Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: TextField(
-                      decoration: InputDecoration(
+                      onChanged: (v) {
+                        if (v.isNotEmpty) {
+                          setState(() {
+                            search = true;
+                          });
+                          findCamp(_searchController.text);
+                        }
+                      },
+                      controller: _searchController,
+                      decoration: const InputDecoration(
                           border: InputBorder.none,
                           prefixIcon: Icon(Icons.search),
                           prefixIconColor: mainColor,
@@ -76,14 +103,16 @@ class _campTileState extends State<campTile> {
                 ],
               ),
             ),
-            height(15),
+            height(10),
             const Text(
               "Discover",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
             ),
             SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                child: isLoad ? campSkelton(size) : camp(context, size)),
+                child: isLoad
+                    ? campSkelton(size)
+                    : searchCamp(context, size, searchList)),
             height(20),
             const Text(
               "Recommended",
@@ -96,6 +125,103 @@ class _campTileState extends State<campTile> {
     );
   }
 }
+
+searchCamp(context, size, searchList) => Row(
+    children: List.generate(
+        searchList.length,
+        (i) => GestureDetector(
+              onTap: () => nextScreen(
+                  context,
+                  ResponsiveLayout(
+                      mobileScaffold: MobileHomeScreen(
+                        pos: 'booking',
+                        camp: searchList[i],
+                      ),
+                      tabletScaffold:
+                          TabletHomeScreen(pos: 'booking', camp: searchList[i]),
+                      laptopScaffold: LaptopHomeScreen(
+                          pos: 'booking', camp: searchList[i]))),
+              child: Container(
+                  margin: const EdgeInsets.only(top: 10, left: 10, right: 10),
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                            color: Colors.grey.shade200,
+                            spreadRadius: 2,
+                            blurRadius: 5)
+                      ],
+                      image: DecorationImage(
+                          onError: (exception, stackTrace) => {},
+                          image: NetworkImage(searchList[i].imageUrl),
+                          fit: BoxFit.cover)),
+                  alignment: Alignment.bottomLeft,
+                  width: size < 600 ? size * 0.9 : 270,
+                  height: 300,
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                            bottomLeft: Radius.circular(10),
+                            bottomRight: Radius.circular(10)),
+                        color: Colors.white),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        height(10),
+                        const Row(
+                          children: [
+                            Text(
+                              "100% recommend ",
+                              style: TextStyle(
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.w600),
+                            ),
+                            Icon(
+                              Icons.circle,
+                              size: 4,
+                              color: Colors.blue,
+                            ),
+                            Text(
+                              " 11 reviews",
+                              style: TextStyle(
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.w600),
+                            )
+                          ],
+                        ),
+                        height(10),
+                        Text(
+                          searchList[i].name,
+                          style: const TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.w800),
+                        ),
+                        height(15),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(Icons.location_on,
+                                    color: Colors.grey, size: 15),
+                                width(5),
+                                Text(searchList[i].location.toString())
+                              ],
+                            ),
+                            Text(
+                              "₹${searchList[i].fee} / unit",
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                        height(10)
+                      ],
+                    ),
+                  )),
+            )));
 
 Widget camp(context, double size) {
   return Wrap(

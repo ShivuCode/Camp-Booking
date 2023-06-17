@@ -45,13 +45,12 @@ class _InvoiceState extends State<Invoice> {
 
   @override
   void initState() {
-    fetchData();
     Future.delayed(const Duration(milliseconds: 300), () {
       setState(() {
         isLoad = false;
       });
     });
-
+    fetchData();
     super.initState();
   }
 
@@ -92,6 +91,11 @@ class _InvoiceState extends State<Invoice> {
                 children: [
                   Expanded(
                     child: TextField(
+                      onChanged: (v) {
+                        setState(() {
+                          showNoContent = false;
+                        });
+                      },
                       controller: _searchController,
                       decoration: const InputDecoration(
                         border: InputBorder.none,
@@ -104,7 +108,7 @@ class _InvoiceState extends State<Invoice> {
                   GestureDetector(
                     onTap: () {
                       if (_searchController.text.isNotEmpty) {
-                        chechData(_searchController.text);
+                        chechData(_searchController.text.trim());
                       } else {
                         customers = temp;
                       }
