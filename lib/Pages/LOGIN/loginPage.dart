@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 import 'package:camp_booking/constant.dart';
 
-import '../../Services/ApiService.dart';
+import '../../Services/api.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -64,7 +64,7 @@ class _LoginPageState extends State<LoginPage> {
                               color: mainColor,
                             ),
                             height(20),
-                            const Text("Our use your email and password.",
+                            const Text("or use your email and password.",
                                 style: TextStyle(
                                     color: Colors.grey, fontSize: 12)),
                             height(10),
@@ -117,7 +117,8 @@ class _LoginPageState extends State<LoginPage> {
                                     isLoad = true;
                                   });
                                   await Future.delayed(const Duration(
-                                      seconds: 1)); // Add a 1-second delay
+                                      milliseconds:
+                                          300)); // Add a 1-second delay
 
                                   // ignore: use_build_context_synchronously
                                   ApiService.loginUser(

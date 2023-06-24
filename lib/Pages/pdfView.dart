@@ -21,7 +21,7 @@ class PdfViewer extends StatelessWidget {
           IconButton(
               splashRadius: 23,
               onPressed: () {
-                Share.shareFiles(['$path'], text: "Invoice of Booking Camp");
+                Share.shareFiles([path], text: "Invoice of Booking Camp");
               },
               icon: const Icon(Icons.share, color: Colors.black))
         ],

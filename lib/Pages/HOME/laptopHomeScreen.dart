@@ -1,13 +1,17 @@
 // ignore: file_names
 import 'package:camp_booking/Models/camp_model.dart';
 import 'package:camp_booking/Models/customer_model.dart';
+
+import 'package:camp_booking/Pages/REPORT/report.dart';
 import 'package:camp_booking/Pages/SEARCH/search.dart';
+import 'package:camp_booking/Pages/VENDOR/form.dart';
+import 'package:camp_booking/Pages/VENDOR/mainPage.dart';
 import 'package:camp_booking/constant.dart';
 
 import 'package:flutter/material.dart';
 
 import '../../Widgets/booking.dart';
-import '../CAMP/campt.dart';
+import '../CAMP/campTile.dart';
 
 // ignore: must_be_immutable
 class LaptopHomeScreen extends StatelessWidget {
@@ -18,7 +22,6 @@ class LaptopHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double size = MediaQuery.of(context).size.width;
     if (pos == 'booking') {
       if (camp != null) {
         return Scaffold(
@@ -47,7 +50,7 @@ class LaptopHomeScreen extends StatelessWidget {
               ],
             ));
       }
-    }  else if (pos == 'search') {
+    } else if (pos == 'search') {
       return Scaffold(
           body: Row(
         children: [
@@ -57,6 +60,42 @@ class LaptopHomeScreen extends StatelessWidget {
             color: Colors.grey,
           ),
           const Expanded(child: Invoice()),
+        ],
+      ));
+    } else if (pos == 'report') {
+      return Scaffold(
+          body: Row(
+        children: [
+          myDrawer(context),
+          const VerticalDivider(
+            width: 0.1,
+            color: Colors.grey,
+          ),
+          const Expanded(child: Report())
+        ],
+      ));
+    } else if (pos == 'vendor') {
+      return Scaffold(
+          body: Row(
+        children: [
+          myDrawer(context),
+          const VerticalDivider(
+            width: 0.1,
+            color: Colors.grey,
+          ),
+          const Expanded(child: MainScreen()),
+        ],
+      ));
+    } else if (pos == 'vendorForm') {
+      return Scaffold(
+          body: Row(
+        children: [
+          myDrawer(context),
+          const VerticalDivider(
+            width: 0.1,
+            color: Colors.grey,
+          ),
+          const Expanded(child: VendorForm())
         ],
       ));
     } else {

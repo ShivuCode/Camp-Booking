@@ -1,6 +1,8 @@
 import 'package:camp_booking/Responsive_Layout/responsive_layout.dart';
 import 'package:camp_booking/Pages/LOGIN/loginPage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -18,6 +20,13 @@ void main() {
       ),
     );
   };
+  ThemeData(primaryColor: Colors.white);
+  const SystemUiOverlayStyle(
+      statusBarColor: Colors.white,
+      systemNavigationBarColor: Colors.white,
+      statusBarBrightness: Brightness.dark,
+      systemNavigationBarIconBrightness: Brightness.dark);
+
   runApp(const MyApp());
 }
 

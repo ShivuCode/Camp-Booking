@@ -10,7 +10,7 @@ import 'package:flutter/services.dart';
 
 import '../../Models/camp_model.dart';
 import '../../Responsive_Layout/responsive_layout.dart';
-import '../../Services/ApiService.dart';
+import '../../Services/api.dart';
 import '../../Services/pdf.dart';
 import '../HOME/laptopHomeScreen.dart';
 import '../HOME/mobileHomeScreen.dart';
@@ -164,7 +164,7 @@ class _InvoiceState extends State<Invoice> {
                                               customers[i].child));
 
                                   return Container(
-                                    width: 270,
+                                    width: size.width > 600 ? 270 : 270,
                                     padding: const EdgeInsets.only(
                                         top: 10, left: 10, right: 10),
                                     child: Column(

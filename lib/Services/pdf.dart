@@ -1,6 +1,11 @@
+import 'dart:convert';
 import 'dart:io';
+import 'package:camp_booking/Services/pdfWeb.dart';
+import 'package:flutter/foundation.dart';
+
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:path_provider/path_provider.dart';
+
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -9,41 +14,46 @@ import '../Models/customer_model.dart';
 
 class PdfService {
   static Future<String> generatePDF(Customer customer) async {
-    if (await Permission.storage.request().isGranted) {
-      final pdf = Document();
-      pdf.addPage(MultiPage(
-        header: (context) => header(),
-        footer: (context) => footer(),
-        build: (context) => [
-          SizedBox(height: 30),
-          formTo(customer),
-          SizedBox(height: 30),
-          builtItemTable(customer),
-          Divider(),
-          SizedBox(height: 10),
-          Row(children: [
-            Expanded(child: builtTerms()),
-            Expanded(child: builtTotal(customer)),
-            SizedBox(width: 5)
-          ]),
-          SizedBox(height: 20),
-        ],
-      ));
-
-      final directory = (await getExternalStorageDirectories(
-              type: StorageDirectory.downloads))!
-          .first;
-      final file = File('${directory.path}/invoice.pdf');
-
-      await file.writeAsBytes(await pdf.save());
-
-      Fluttertoast.showToast(msg: "Download", gravity: ToastGravity.BOTTOM);
-      return file.path;
-    } else {
-      Fluttertoast.showToast(
-          msg: "We can't download", gravity: ToastGravity.BOTTOM);
-
+    final pdf = Document();
+    pdf.addPage(MultiPage(
+      header: (context) => header(),
+      footer: (context) => footer(),
+      build: (context) => [
+        SizedBox(height: 30),
+        formTo(customer),
+        SizedBox(height: 30),
+        builtItemTable(customer),
+        Divider(),
+        SizedBox(height: 10),
+        Row(children: [
+          Expanded(child: builtTerms()),
+          Expanded(child: builtTotal(customer)),
+          SizedBox(width: 5)
+        ]),
+        SizedBox(height: 20),
+      ],
+    ));
+    if (kIsWeb) {
+      pdf.save();
       return '';
+    } else {
+      if (await Permission.storage.request().isGranted) {
+        final directory = (await getExternalStorageDirectories(
+                type: StorageDirectory.downloads))!
+            .first;
+
+        // final directory = Directory('/storage/emulated/0/Download');
+        final file = File('${directory.path}/invoice.pdf');
+
+        await file.writeAsBytes(await pdf.save());
+
+        return file.path;
+      } else {
+        Fluttertoast.showToast(
+            msg: "We can't download", gravity: ToastGravity.BOTTOM);
+
+        return '';
+      }
     }
   }
 }

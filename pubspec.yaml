@@ -50,6 +50,12 @@ dependencies:
   permission_handler:
   file_picker:
   device_info_plus: ^9.0.2
+  video_thumbnail: 
+  scratcher:
+  excel: ^2.1.0
+  dio:
+  external_path: 
+
 
 
 

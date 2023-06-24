@@ -1,12 +1,16 @@
 import 'package:camp_booking/Pages/HOME/laptopHomeScreen.dart';
 import 'package:camp_booking/Pages/HOME/mobileHomeScreen.dart';
 import 'package:camp_booking/Pages/HOME/tabletHomeScreen.dart';
+
 import 'package:camp_booking/Responsive_Layout/responsive_layout.dart';
-import 'package:camp_booking/Services/ApiService.dart';
+import 'package:camp_booking/Services/api.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'Models/vendor_model.dart';
+
 const mainColor = Color(0xFF0ECB7B);
+List<Vendor> vendorList = [];
 AppBar appBar(context) {
   return AppBar(
     backgroundColor: Colors.transparent,
@@ -77,6 +81,42 @@ Widget myDrawer(context) {
         },
         leading: const Icon(Icons.search),
         title: const Text("S E A R C H"),
+      ),
+      ListTile(
+        onTap: () {
+          nextReplacement(
+              context,
+              ResponsiveLayout(
+                  mobileScaffold: MobileHomeScreen(
+                    pos: 'vendor',
+                  ),
+                  tabletScaffold: TabletHomeScreen(
+                    pos: 'vendor',
+                  ),
+                  laptopScaffold: LaptopHomeScreen(
+                    pos: 'vendor',
+                  )));
+        },
+        leading: const Icon(Icons.people_alt_outlined),
+        title: const Text("V E N D O R"),
+      ),
+      ListTile(
+        onTap: () {
+          nextReplacement(
+              context,
+              ResponsiveLayout(
+                  mobileScaffold: MobileHomeScreen(
+                    pos: 'report',
+                  ),
+                  tabletScaffold: TabletHomeScreen(
+                    pos: 'report',
+                  ),
+                  laptopScaffold: LaptopHomeScreen(
+                    pos: 'report',
+                  )));
+        },
+        leading: const Icon(Icons.report),
+        title: const Text("R E P O R T"),
       ),
       ListTile(
         onTap: () {

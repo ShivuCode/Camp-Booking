@@ -1,7 +1,8 @@
 import 'package:camp_booking/Models/camp_model.dart';
 import 'package:camp_booking/Models/customer_model.dart';
 import 'package:camp_booking/Responsive_Layout/responsiveWidget.dart';
-import 'package:camp_booking/Services/ApiService.dart';
+import 'package:camp_booking/Services/api.dart';
+import 'package:camp_booking/Services/email.dart';
 import 'package:camp_booking/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -399,8 +400,9 @@ class _BookingPageState extends State<BookingPage> {
                           validator: (value) {
                             if (value!.isEmpty) {
                               return 'Please enter the price';
+                            } else if (int.tryParse(value) == null) {
+                              return 'Please remove floating value';
                             }
-                            return null;
                           },
                           decoration: const InputDecoration(
                             labelText: 'Price',
@@ -580,15 +582,14 @@ class _BookingPageState extends State<BookingPage> {
                             ticketFlag: _ticketFlag,
                             advAmt: int.parse(_advanceController.text));
                         if (await ApiService.addNew(customer)) {
+                          Email.sendMail(customer);
                           // ignore: use_build_context_synchronously
                           showDialog(
                               context: context,
                               builder: (_) => AlertDialog(
                                     title: const Text("Booking Successful"),
-                                    icon: const ImageIcon(
-                                      AssetImage('assets/c4.png'),
-                                      size: 60.0,
-                                    ),
+                                    icon: const Icon(Icons.check_circle_outline,
+                                        color: mainColor, size: 60),
                                     content: const Text(
                                         "Request for camp booking is approved. Have a taste of wild."),
                                     actions: [
