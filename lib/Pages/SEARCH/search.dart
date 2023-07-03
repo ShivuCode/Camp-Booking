@@ -1,8 +1,7 @@
 import 'dart:async';
 
 import 'package:camp_booking/Models/customer_model.dart';
-import 'package:camp_booking/Pages/CAMP/campList.dart';
-import 'package:camp_booking/Responsive_Layout/responsiveWidget.dart';
+
 import 'package:camp_booking/Widgets/skelton.dart';
 import 'package:camp_booking/constant.dart';
 import 'package:flutter/material.dart';
@@ -25,27 +24,35 @@ class Invoice extends StatefulWidget {
 }
 
 class _InvoiceState extends State<Invoice> {
-  Camp camp = campList[3];
+  late Camp camp;
   List<Customer> customers = [];
   List<Customer> temp = [];
   final scrollController = ScrollController();
   final _searchController = TextEditingController();
-  int page = 0;
+  int page = 1;
   bool isLoad = true;
   bool showNoContent = false;
   bool showMore = false;
+  bool stop = false;
   void fetchData() async {
-    final data = await ApiService.fetchDataPage(page);
-    for (var element in data) {
+    final data = await ApiService.fetchDataPage(page, 5);
+    if (data.isNotEmpty) {
+      for (var element in data['items']) {
+        setState(() {
+          customers.add(Customer.fromJson(element));
+        });
+      }
+      temp = customers;
+    } else {
       setState(() {
-        customers.add(Customer.fromJson(element));
+        stop = true;
       });
     }
-    temp = customers;
   }
 
   @override
   void initState() {
+    fetchCamp();
     Future.delayed(const Duration(milliseconds: 300), () {
       setState(() {
         isLoad = false;
@@ -57,99 +64,97 @@ class _InvoiceState extends State<Invoice> {
   }
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
-      body: RawKeyboardListener(
-        focusNode: FocusNode(),
-        onKey: (event) {
-          if (event.isKeyPressed(LogicalKeyboardKey.enter)) {
-            setState(() {
-              showNoContent = false;
-            });
-            if (_searchController.text.isNotEmpty) {
-              chechData(_searchController.text);
-            } else {
-              customers = temp;
-            }
-          }
-        },
-        child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text("All Camp Bookings",
-                  style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700)),
-              height(10),
-              Container(
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: mainColor, width: 0.3),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        onChanged: (v) {
-                          setState(() {
-                            showNoContent = false;
-                          });
-                        },
-                        controller: _searchController,
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          prefixIcon: Icon(Icons.search),
-                          prefixIconColor: mainColor,
-                          hintText: 'Search',
-                        ),
+      body: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Text("All Camp Bookings",
+                style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700)),
+            height(10),
+            Container(
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: mainColor, width: 0.3),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      onChanged: (v) {
+                        setState(() {
+                          showNoContent = false;
+                        });
+                      },
+                      controller: _searchController,
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        prefixIcon: Icon(Icons.search),
+                        prefixIconColor: mainColor,
+                        hintText: 'Search',
                       ),
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        if (_searchController.text.isNotEmpty) {
-                          chechData(_searchController.text.trim());
-                        } else {
-                          customers = temp;
-                        }
-                      },
-                      child: Container(
-                        width: 60,
-                        height: 50,
-                        decoration: const BoxDecoration(
-                          color: mainColor,
-                          borderRadius: BorderRadius.only(
-                              topRight: Radius.circular(6),
-                              bottomRight: Radius.circular(6)),
-                        ),
-                        child: const Icon(
-                          Icons.line_axis,
-                          color: Colors.white,
-                        ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      if (_searchController.text.isNotEmpty) {
+                        chechData(_searchController.text.trim());
+                      } else {
+                        customers = temp;
+                      }
+                    },
+                    child: Container(
+                      width: 60,
+                      height: 50,
+                      decoration: const BoxDecoration(
+                        color: mainColor,
+                        borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(6),
+                            bottomRight: Radius.circular(6)),
                       ),
-                    )
-                  ],
-                ),
+                      child: const Icon(
+                        Icons.line_axis,
+                        color: Colors.white,
+                      ),
+                    ),
+                  )
+                ],
               ),
-              height(10),
-              showNoContent
-                  ? Expanded(
-                      child: Container(
-                          alignment: Alignment.center,
-                          width: size.width * 0.9,
-                          height: size.height * 0.5,
-                          child: const Text("No Content")),
-                    )
-                  : isLoad
-                      ? Expanded(
+            ),
+            height(10),
+            showNoContent
+                ? Expanded(
+                    child: Container(
+                        alignment: Alignment.center,
+                        width: size.width * 0.9,
+                        height: size.height * 0.5,
+                        child: const Text("No Content")),
+                  )
+                : isLoad
+                    ? Expanded(
+                        child: ScrollConfiguration(
+                          behavior: ScrollGlowEffect(),
                           child: SingleChildScrollView(
                             child: Column(
                                 children: List.generate(
                                     5, (index) => ListSkeleton())),
                           ),
-                        )
-                      : Expanded(
+                        ),
+                      )
+                    : Expanded(
+                        child: ScrollConfiguration(
+                          behavior: ScrollGlowEffect(),
                           child: ListView.builder(
                               scrollDirection: Axis.vertical,
                               controller: scrollController,
@@ -181,7 +186,7 @@ class _InvoiceState extends State<Invoice> {
                                                             stackTrace) =>
                                                         {},
                                                     image: NetworkImage(
-                                                        camp.imageUrl),
+                                                        camp.titleImageUrl),
                                                     fit: BoxFit.cover)),
                                           ),
                                           width(8),
@@ -262,7 +267,9 @@ class _InvoiceState extends State<Invoice> {
                                               onPressed: () async {
                                                 String path = await PdfService
                                                     .generatePDF(customers[i]);
+
                                                 if (path.isNotEmpty) {
+                                                  // ignore: use_build_context_synchronously
                                                   nextScreen(context,
                                                       PdfViewer(path: path));
                                                 }
@@ -290,25 +297,28 @@ class _InvoiceState extends State<Invoice> {
                                       child: CircularProgressIndicator(
                                           color: Colors.grey));
                                 }
+                                return null;
                               }),
-                        )
-            ])),
-      ),
+                        ),
+                      )
+          ])),
     );
   }
 
   void _scrollController() {
-    // ignore: unrelated_type_equality_checks
-    if (scrollController.position.pixels ==
-        scrollController.position.maxScrollExtent) {
-      page += 1;
-      setState(() {
-        showMore = true;
-      });
-      fetchData();
-      setState(() {
-        showMore = false;
-      });
+    if (!stop) {
+      // ignore: unrelated_type_equality_checks
+      if (scrollController.position.pixels ==
+          scrollController.position.maxScrollExtent) {
+        page += 1;
+        setState(() {
+          showMore = true;
+        });
+        fetchData();
+        setState(() {
+          showMore = false;
+        });
+      }
     }
   }
 
@@ -340,6 +350,13 @@ class _InvoiceState extends State<Invoice> {
     }
     setState(() {
       isLoad = !isLoad;
+    });
+  }
+
+  void fetchCamp() async {
+    final data = await ApiService.fetchCampById(2);
+    setState(() {
+      camp = Camp.fromJson(data);
     });
   }
 }

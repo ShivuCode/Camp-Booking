@@ -5,12 +5,11 @@ import 'package:flutter/services.dart';
 
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'Pages/HOME/laptopHomeScreen.dart';
 import 'Pages/HOME/mobileHomeScreen.dart';
 import 'Pages/HOME/tabletHomeScreen.dart';
 
-void main() {
+void main() async {
   ErrorWidget.builder = (FlutterErrorDetails details) {
     return Container(
       alignment: Alignment.center,

@@ -1,11 +1,10 @@
-import 'dart:convert';
 import 'dart:io';
-import 'package:camp_booking/Services/pdfWeb.dart';
+
+import 'package:camp_booking/Services/export.dart';
+import 'package:camp_booking/constant.dart';
 import 'package:flutter/foundation.dart';
-
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:path_provider/path_provider.dart';
-
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -37,21 +36,32 @@ class PdfService {
       pdf.save();
       return '';
     } else {
-      if (await Permission.storage.request().isGranted) {
-        final directory = (await getExternalStorageDirectories(
-                type: StorageDirectory.downloads))!
-            .first;
-
-        // final directory = Directory('/storage/emulated/0/Download');
-        final file = File('${directory.path}/invoice.pdf');
-
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      late final Map<Permission, PermissionStatus> status;
+      if (androidInfo.version.sdkInt <= 32) {
+        status = await [Permission.storage].request();
+      } else {
+        status = await [
+          Permission.photos,
+          Permission.manageExternalStorage,
+        ].request();
+      }
+      var allAccepted = true;
+      status.forEach((permission, stu) {
+        if (stu != PermissionStatus.granted) {
+          allAccepted = false;
+        }
+      });
+      if (allAccepted) {
+        final directory = Directory("/storage/emulated/0/Download");
+        final file = File(
+            '${directory.path}/invoice${DateTime.now().millisecondsSinceEpoch}.$pdf');
         await file.writeAsBytes(await pdf.save());
-
+        Fluttertoast.showToast(msg: "Downloaded ", backgroundColor: mainColor);
         return file.path;
       } else {
         Fluttertoast.showToast(
-            msg: "We can't download", gravity: ToastGravity.BOTTOM);
-
+            msg: "We can't Open", backgroundColor: mainColor);
         return '';
       }
     }

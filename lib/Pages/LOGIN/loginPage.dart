@@ -64,7 +64,7 @@ class _LoginPageState extends State<LoginPage> {
                               color: mainColor,
                             ),
                             height(20),
-                            const Text("or use your email and password.",
+                            const Text("Use your email and password.",
                                 style: TextStyle(
                                     color: Colors.grey, fontSize: 12)),
                             height(10),

@@ -5,61 +5,84 @@ import 'package:camp_booking/Models/customer_model.dart';
 import 'package:excel/excel.dart';
 import 'package:flutter/foundation.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:path_provider/path_provider.dart';
+
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../constant.dart';
 
 class Export {
   static void excel(List<Customer> customers) async {
+    final header = [
+      "Id",
+      "Name",
+      "Mobile",
+      "Email",
+      "Address",
+      "Booking Date",
+      "Adults",
+      "Childs",
+      "Veg Count",
+      "Non-veg Count",
+      "Fee",
+      "Total",
+      "Advance",
+      "Remaining"
+    ];
     var excel = Excel.createExcel();
     final sheet = excel[excel.getDefaultSheet()!];
-    sheet.headerFooter;
 
+    for (int j = 0; j < header.length; j++) {
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: j, rowIndex: 0))
+          .value = header[j].toString();
+    }
     for (int i = 0; i < customers.length; i++) {
       double total = (customers[i].price * customers[i].adult) +
           ((customers[i].price * 0.45) * customers[i].child);
       sheet
-          .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: i))
+          .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: i + 1))
           .value = customers[i].id.toString();
       sheet
-          .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: i))
+          .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: i + 1))
           .value = customers[i].name;
       sheet
-          .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: i))
+          .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: i + 1))
           .value = customers[i].mobNo;
       sheet
-          .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: i))
+          .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: i + 1))
           .value = customers[i].address;
       sheet
-          .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: i))
+          .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: i + 1))
           .value = customers[i].email;
       sheet
-          .cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: i))
-          .value = customers[i].bookingDate;
+          .cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: i + 1))
+          .value = customers[i].bookingDate.split('T').first;
       sheet
-          .cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: i))
+          .cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: i + 1))
           .value = customers[i].adult.toString();
       sheet
-          .cell(CellIndex.indexByColumnRow(columnIndex: 7, rowIndex: i))
+          .cell(CellIndex.indexByColumnRow(columnIndex: 7, rowIndex: i + 1))
           .value = customers[i].child.toString();
       sheet
-          .cell(CellIndex.indexByColumnRow(columnIndex: 8, rowIndex: i))
+          .cell(CellIndex.indexByColumnRow(columnIndex: 8, rowIndex: i + 1))
           .value = customers[i].vegPeopleCount.toString();
       sheet
-          .cell(CellIndex.indexByColumnRow(columnIndex: 9, rowIndex: i))
+          .cell(CellIndex.indexByColumnRow(columnIndex: 9, rowIndex: i + 1))
           .value = customers[i].nonVegPeopleCount.toString();
       sheet
-          .cell(CellIndex.indexByColumnRow(columnIndex: 10, rowIndex: i))
+          .cell(CellIndex.indexByColumnRow(columnIndex: 10, rowIndex: i + 1))
           .value = customers[i].price;
       sheet
-          .cell(CellIndex.indexByColumnRow(columnIndex: 11, rowIndex: i))
+          .cell(CellIndex.indexByColumnRow(columnIndex: 11, rowIndex: i + 1))
           .value = total;
       sheet
-          .cell(CellIndex.indexByColumnRow(columnIndex: 12, rowIndex: i))
+          .cell(CellIndex.indexByColumnRow(columnIndex: 12, rowIndex: i + 1))
           .value = customers[i].advAmt;
       sheet
-          .cell(CellIndex.indexByColumnRow(columnIndex: 13, rowIndex: i))
+          .cell(CellIndex.indexByColumnRow(columnIndex: 13, rowIndex: i + 1))
           .value = total - customers[i].advAmt;
     }
     if (kIsWeb) {
@@ -68,11 +91,7 @@ class Export {
     } else {
       if (await Permission.storage.request().isGranted) {
         var fileBytes = excel.save(fileName: 'data.xlsx');
-        final directory = (await getExternalStorageDirectories(
-                type: StorageDirectory.downloads))!
-            .first;
-        File file = File("${directory.path}/data.xlsx");
-        file.writeAsBytes(fileBytes!);
+        saveFile(fileBytes, 'Data', 'xlsx');
         Fluttertoast.showToast(msg: "Downloaded");
       } else {
         Fluttertoast.showToast(msg: "Required Permission");
@@ -94,12 +113,7 @@ class Export {
       Fluttertoast.showToast(msg: "Downloaded");
     } else {
       if (await Permission.storage.request().isGranted) {
-        final directory = (await getExternalStorageDirectories(
-                type: StorageDirectory.downloads))!
-            .first;
-        File file = File("${directory.path}/data.pdf");
-        file.writeAsBytes(await pdf.save());
-        Fluttertoast.showToast(msg: "Downloaded");
+        saveFile(await pdf.save(), 'Data', 'pdf');
       } else {
         Fluttertoast.showToast(msg: "Required Permission");
       }
@@ -163,4 +177,24 @@ builtTable(List<Customer> customers) {
       },
       headers: header,
       headerStyle: TextStyle(fontSize: 6, fontWeight: FontWeight.bold));
+}
+
+saveFile(content, filename, extension) async {
+  final directory = Directory("/storage/emulated/0/Download");
+  final file = File(
+      '${directory.path}/$filename${DateTime.now().millisecondsSinceEpoch}.$extension');
+  await file.writeAsBytes(content);
+  Fluttertoast.showToast(msg: "Downloaded ", backgroundColor: mainColor);
+  return file.path;
+}
+
+void sendWhatsAppMessage(
+    String countryCode, String phoneNumber, String message) async {
+  phoneNumber = countryCode + phoneNumber;
+  final url = "https://wa.me/$phoneNumber/?text=${Uri.encodeFull(message)}";
+  if (await canLaunch(url)) {
+    await launch(url);
+  } else {
+    throw 'Could not launch $url';
+  }
 }

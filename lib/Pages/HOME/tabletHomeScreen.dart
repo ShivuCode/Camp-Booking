@@ -7,6 +7,7 @@ import 'package:camp_booking/Pages/VENDOR/mainPage.dart';
 import 'package:camp_booking/constant.dart';
 import '../../Widgets/booking.dart';
 
+import '../CAMP/addCamp.dart';
 import '../CAMP/campTile.dart';
 import 'package:flutter/material.dart';
 
@@ -21,7 +22,6 @@ class TabletHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
     if (pos == 'booking') {
       if (camp != null) {
         return Scaffold(
@@ -56,6 +56,11 @@ class TabletHomeScreen extends StatelessWidget {
           appBar: appBar(context),
           drawer: myDrawer(context),
           body: const VendorForm());
+    } else if (pos == 'addCamp') {
+      return Scaffold(
+          appBar: appBar(context),
+          drawer: myDrawer(context),
+          body: const AddCamp());
     } else {
       return Scaffold(
           appBar: appBar(context),

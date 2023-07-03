@@ -1,6 +1,7 @@
 // ignore: file_names
 import 'package:camp_booking/Models/camp_model.dart';
 import 'package:camp_booking/Models/customer_model.dart';
+import 'package:camp_booking/Pages/CAMP/addCamp.dart';
 
 import 'package:camp_booking/Pages/REPORT/report.dart';
 import 'package:camp_booking/Pages/SEARCH/search.dart';
@@ -96,6 +97,18 @@ class LaptopHomeScreen extends StatelessWidget {
             color: Colors.grey,
           ),
           const Expanded(child: VendorForm())
+        ],
+      ));
+    } else if (pos == 'addCamp') {
+      return Scaffold(
+          body: Row(
+        children: [
+          myDrawer(context),
+          const VerticalDivider(
+            width: 0.1,
+            color: Colors.grey,
+          ),
+          const Expanded(child: AddCamp())
         ],
       ));
     } else {

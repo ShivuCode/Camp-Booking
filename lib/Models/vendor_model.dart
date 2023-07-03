@@ -1,43 +1,58 @@
+import 'dart:convert';
+
 class Vendor {
-  String organisationName;
-  String gstRegistration;
+  int vendorid;
+  int userId;
+  String organizationName;
+  String gst;
   String website;
-  String mobileNumber;
-  String emailAddress;
+  String mobile;
+  String email;
   String address;
   String ownerName;
 
   Vendor({
-    required this.organisationName,
-    required this.gstRegistration,
+    required this.vendorid,
+    required this.userId,
+    required this.organizationName,
+    required this.gst,
     required this.website,
-    required this.mobileNumber,
-    required this.emailAddress,
+    required this.mobile,
+    required this.email,
     required this.address,
     required this.ownerName,
   });
 
+  Map<String, dynamic> toJson() {
+    return {
+      "Vendorid": vendorid,
+      'UserId': userId,
+      'OrganizationName': organizationName,
+      'GST': gst,
+      'Website': website,
+      'Mobile': mobile,
+      'Email': email,
+      'Address': address,
+      'OwnerName': ownerName,
+    };
+  }
+
   factory Vendor.fromJson(Map<String, dynamic> json) {
     return Vendor(
-      organisationName: json['organisationName'],
-      gstRegistration: json['gstRegistration'],
-      website: json['website'],
-      mobileNumber: json['mobileNumber'],
-      emailAddress: json['emailAddress'],
-      address: json['address'],
-      ownerName: json['ownerName'],
+      vendorid: json['Vendorid'],
+      userId: json['UserId'],
+      organizationName: json['OrganizationName'],
+      gst: json['GST'],
+      website: json['Website'],
+      mobile: json['Mobile'],
+      email: json['Email'],
+      address: json['Address'],
+      ownerName: json['OwnerName'],
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'organisationName': organisationName,
-      'gstRegistration': gstRegistration,
-      'website': website,
-      'mobileNumber': mobileNumber,
-      'emailAddress': emailAddress,
-      'address': address,
-      'ownerName': ownerName,
-    };
+  factory Vendor.fromJsonString(String jsonString) {
+    Map<String, dynamic> json = jsonDecode(jsonString);
+    return Vendor.fromJson(json);
   }
 }

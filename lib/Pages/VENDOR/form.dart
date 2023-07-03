@@ -1,6 +1,8 @@
+import 'package:camp_booking/Models/vendor_model.dart';
+import 'package:camp_booking/Services/api.dart';
 import 'package:camp_booking/constant.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import '../../Responsive_Layout/responsiveWidget.dart';
 import '../../Responsive_Layout/responsive_layout.dart';
@@ -42,18 +44,17 @@ class _VendorFormState extends State<VendorForm> {
               height(10),
               ResponsiveForm.responsiveForm(children: [
                 TextFormField(
-                  controller: _Vname,
-                  decoration: const InputDecoration(
-                      label: Text("Organization Name"),
-                      border: OutlineInputBorder()),
-                  validator: (v) {
-                    if (v!.isEmpty) {
-                      return 'Please enter Organization name';
-                    } else {
-                      return null;
-                    }
-                  },
-                ),
+                    controller: _Vname,
+                    decoration: const InputDecoration(
+                        label: Text("Organization Name"),
+                        border: OutlineInputBorder()),
+                    validator: (v) {
+                      if (v!.isEmpty) {
+                        return 'Please enter Organization name';
+                      } else {
+                        return null;
+                      }
+                    }),
                 TextFormField(
                   controller: _gst,
                   decoration: const InputDecoration(
@@ -104,7 +105,7 @@ class _VendorFormState extends State<VendorForm> {
                   validator: (v) {
                     if (v!.isEmpty) {
                       return 'Please enter email';
-                    } else if (!v.contains("@.com")) {
+                    } else if (!v.contains("@") && !v.contains(".com")) {
                       return 'Please enter valid email';
                     } else {
                       return null;
@@ -172,24 +173,40 @@ class _VendorFormState extends State<VendorForm> {
                             minimumSize: MaterialStateProperty.all(
                                 const Size(double.infinity, 50))),
                         onPressed: () async {
-                          // if (_formKey.currentState!.validate()) {
-                          SharedPreferences sf =
-                              await SharedPreferences.getInstance();
-                          sf.setBool("isRegister", true);
-                          // ignore: use_build_context_synchronously
-                          nextReplacement(
-                              context,
-                              ResponsiveLayout(
-                                  mobileScaffold: MobileHomeScreen(
-                                    pos: 'vendor',
-                                  ),
-                                  tabletScaffold: TabletHomeScreen(
-                                    pos: 'vendor',
-                                  ),
-                                  laptopScaffold: LaptopHomeScreen(
-                                    pos: 'vendor',
-                                  )));
-                          // }
+                          if (_formKey.currentState!.validate()) {
+                            print("call length");
+                            // final data = await ApiService.fetchVendor(1, 10);
+
+                            Vendor vendor = Vendor(
+                                vendorid: 6,
+                                userId: 1,
+                                organizationName: _Vname.text,
+                                gst: _gst.text,
+                                mobile: _mobile.text,
+                                email: _mail.text,
+                                address: _address.text,
+                                ownerName: _ownerName.text,
+                                website: _website.text);
+
+                            if (await ApiService.addVendor(vendor)) {
+                              Fluttertoast.showToast(
+                                  msg: "Registered Succefully",
+                                  backgroundColor: mainColor);
+                              // ignore: use_build_context_synchronously
+                              nextReplacement(
+                                  context,
+                                  ResponsiveLayout(
+                                      mobileScaffold: MobileHomeScreen(
+                                        pos: 'vendor',
+                                      ),
+                                      tabletScaffold: TabletHomeScreen(
+                                        pos: 'vendor',
+                                      ),
+                                      laptopScaffold: LaptopHomeScreen(
+                                        pos: 'vendor',
+                                      )));
+                            }
+                          }
                         },
                         child: const Text("Register")),
                   ),

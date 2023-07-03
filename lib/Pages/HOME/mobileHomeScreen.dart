@@ -1,4 +1,5 @@
 import 'package:camp_booking/Models/customer_model.dart';
+import 'package:camp_booking/Pages/CAMP/addCamp.dart';
 
 import 'package:camp_booking/Pages/REPORT/report.dart';
 import 'package:camp_booking/Pages/VENDOR/form.dart';
@@ -47,6 +48,11 @@ class MobileHomeScreen extends StatelessWidget {
           appBar: appBar(context),
           drawer: myDrawer(context),
           body: const MainScreen());
+    } else if (pos == 'addCamp') {
+      return Scaffold(
+          appBar: appBar(context),
+          drawer: myDrawer(context),
+          body: const AddCamp());
     } else if (pos == 'vendorForm') {
       return Scaffold(
           appBar: appBar(context),

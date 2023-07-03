@@ -1,3 +1,4 @@
+import 'package:camp_booking/Pages/BOOKED/booked.dart';
 import 'package:camp_booking/Pages/HOME/laptopHomeScreen.dart';
 import 'package:camp_booking/Pages/HOME/mobileHomeScreen.dart';
 import 'package:camp_booking/Pages/HOME/tabletHomeScreen.dart';
@@ -6,10 +7,12 @@ import 'package:camp_booking/Responsive_Layout/responsive_layout.dart';
 import 'package:camp_booking/Services/api.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'Models/vendor_model.dart';
 
 const mainColor = Color(0xFF0ECB7B);
+// Color mainColor = Colors.orange.shade600;
 List<Vendor> vendorList = [];
 AppBar appBar(context) {
   return AppBar(
@@ -61,7 +64,10 @@ Widget myDrawer(context) {
                   tabletScaffold: TabletHomeScreen(),
                   laptopScaffold: LaptopHomeScreen()));
         },
-        leading: const Icon(Icons.home),
+        leading: const Icon(
+          FontAwesomeIcons.house,
+          size: 16,
+        ),
         title: const Text("H O M E"),
       ),
       ListTile(
@@ -79,7 +85,10 @@ Widget myDrawer(context) {
                     pos: 'search',
                   )));
         },
-        leading: const Icon(Icons.search),
+        leading: const Icon(
+          FontAwesomeIcons.magnifyingGlass,
+          size: 16,
+        ),
         title: const Text("S E A R C H"),
       ),
       ListTile(
@@ -97,7 +106,10 @@ Widget myDrawer(context) {
                     pos: 'vendor',
                   )));
         },
-        leading: const Icon(Icons.people_alt_outlined),
+        leading: const Icon(
+          Icons.people_alt_outlined,
+          size: 16,
+        ),
         title: const Text("V E N D O R"),
       ),
       ListTile(
@@ -115,14 +127,28 @@ Widget myDrawer(context) {
                     pos: 'report',
                   )));
         },
-        leading: const Icon(Icons.report),
+        leading: const Icon(
+          FontAwesomeIcons.notesMedical,
+          size: 16,
+        ),
         title: const Text("R E P O R T"),
+      ),
+      ListTile(
+        title: const Text('H I S T O R Y'),
+        leading: const Icon(
+          FontAwesomeIcons.history,
+          size: 16,
+        ),
+        onTap: () => nextReplacement(context, const HistoryPage()),
       ),
       ListTile(
         onTap: () {
           ApiService.logout(context);
         },
-        leading: const Icon(Icons.logout),
+        leading: const Icon(
+          FontAwesomeIcons.rightFromBracket,
+          size: 16,
+        ),
         title: const Text("L O G O U T"),
       ),
     ]),
@@ -167,4 +193,12 @@ dec(String hint) {
     fillColor: Colors.white,
   );
   return decoration;
+}
+
+class ScrollGlowEffect extends ScrollBehavior {
+  @override
+  Widget buildViewportChrome(
+      BuildContext context, Widget child, AxisDirection axisDirection) {
+    return child;
+  }
 }

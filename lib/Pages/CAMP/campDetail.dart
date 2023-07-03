@@ -38,7 +38,7 @@ class _CampDetailState extends State<CampDetail> {
       body: SafeArea(
           child: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(15.0),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Container(
@@ -46,11 +46,11 @@ class _CampDetailState extends State<CampDetail> {
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
                   image: DecorationImage(
-                      image: NetworkImage(widget.camp!.imageUrl),
+                      image: NetworkImage(widget.camp!.titleImageUrl),
                       fit: BoxFit.cover)),
             ),
             height(10),
-            Text(widget.camp!.name,
+            Text(widget.camp!.campName,
                 style:
                     const TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
             const Text(
@@ -58,7 +58,7 @@ class _CampDetailState extends State<CampDetail> {
                 style: TextStyle(fontSize: 14)),
             height(5),
             Text(
-              " ₹${widget.camp!.fee}.0",
+              " ₹${widget.camp!.campFee}.0",
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             height(10),

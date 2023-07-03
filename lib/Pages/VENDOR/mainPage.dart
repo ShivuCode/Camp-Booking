@@ -1,13 +1,10 @@
 import 'package:camp_booking/Pages/CAMP/campDetail.dart';
-import 'package:camp_booking/Pages/CAMP/campList.dart';
-
-import 'package:flutter/foundation.dart';
-
 import 'package:flutter/material.dart';
-
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import '../../Models/camp_model.dart';
 import '../../Responsive_Layout/responsive_layout.dart';
+import '../../Services/api.dart';
 import '../../constant.dart';
 import '../HOME/laptopHomeScreen.dart';
 import '../HOME/tabletHomeScreen.dart';
@@ -21,6 +18,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  List<Camp> campList = [];
   bool isCardScratched = false;
   bool isRegister = false;
   isRegisterCheck() async {
@@ -33,6 +31,15 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
+  fetchData() async {
+    final data = await ApiService.fetchCampData(1, 8);
+    for (var element in data['items']) {
+      setState(() {
+        campList.add(Camp.fromJson(element));
+      });
+    }
+  }
+
   @override
   void initState() {
     isRegisterCheck();
@@ -41,8 +48,22 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    List<String> messages = [
+      "Hello!",
+      "How are you?",
+      "This is a test message.",
+      "Flutter is awesome!",
+    ];
     double size = MediaQuery.of(context).size.width;
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: mainColor,
+        onPressed: () {},
+        child: const Icon(
+          FontAwesomeIcons.whatsapp,
+          color: Colors.white,
+        ),
+      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(12.0),
@@ -132,21 +153,8 @@ class _MainScreenState extends State<MainScreen> {
                         campList.length,
                         (i) => GestureDetector(
                               onTap: () {
-                                nextReplacement(
-                                    context,
-                                    ResponsiveLayout(
-                                        mobileScaffold: MobileHomeScreen(
-                                          pos: 'detail',
-                                          camp: campList[i],
-                                        ),
-                                        tabletScaffold: TabletHomeScreen(
-                                          pos: 'detail',
-                                          camp: campList[i],
-                                        ),
-                                        laptopScaffold: LaptopHomeScreen(
-                                          pos: 'detail',
-                                          camp: campList[i],
-                                        )));
+                                nextScreen(
+                                    context, CampDetail(camp: campList[i]));
                               },
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
@@ -160,7 +168,7 @@ class _MainScreenState extends State<MainScreen> {
                                               BorderRadius.circular(5),
                                           image: DecorationImage(
                                               image: NetworkImage(
-                                                  campList[i].imageUrl),
+                                                  campList[i].titleImageUrl),
                                               fit: BoxFit.cover)),
                                       child: Container(
                                         padding: const EdgeInsets.all(2),
@@ -173,7 +181,7 @@ class _MainScreenState extends State<MainScreen> {
                                                     bottomRight:
                                                         Radius.circular(3))),
                                         child: Text(
-                                          "Rs. ${campList[i].fee}",
+                                          "Rs. ${campList[i].campFee}",
                                           style: const TextStyle(
                                               color: Colors.white,
                                               fontSize: 10),

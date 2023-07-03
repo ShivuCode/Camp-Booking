@@ -1,5 +1,6 @@
 import 'package:camp_booking/Models/camp_model.dart';
 import 'package:camp_booking/Models/customer_model.dart';
+import 'package:camp_booking/Pages/ORDER/order.dart';
 import 'package:camp_booking/Responsive_Layout/responsiveWidget.dart';
 import 'package:camp_booking/Services/api.dart';
 import 'package:camp_booking/Services/email.dart';
@@ -158,7 +159,9 @@ class _BookingPageState extends State<BookingPage> {
                           decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8),
                               image: DecorationImage(
-                                  image: NetworkImage(widget.camp!.imageUrl),
+                                  onError: (exception, stackTrace) => {},
+                                  image: NetworkImage(
+                                      "https://pawnacamp.in/Content/img/Camp/${widget.camp!.titleImageUrl}"),
                                   fit: BoxFit.cover)),
                         ),
                         width(8),
@@ -166,9 +169,14 @@ class _BookingPageState extends State<BookingPage> {
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(widget.camp!.name,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w700, fontSize: 18)),
+                            SizedBox(
+                              width: size * 0.55,
+                              child: Text(widget.camp!.campName,
+                                  softWrap: true,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 18)),
+                            ),
                             height(8),
                             const SizedBox(
                               width: 200,
@@ -183,7 +191,7 @@ class _BookingPageState extends State<BookingPage> {
                                 style: const TextStyle(color: Colors.blue),
                                 children: [
                                   TextSpan(
-                                      text: " ₹ ${widget.camp!.fee}",
+                                      text: " ₹ ${widget.camp!.campFee}",
                                       style: const TextStyle(
                                           fontWeight: FontWeight.w400,
                                           color: Colors.black))
@@ -318,6 +326,7 @@ class _BookingPageState extends State<BookingPage> {
                     Expanded(
                       child: TextFormField(
                         controller: _adultController,
+                        keyboardType: TextInputType.number,
                         onChanged: (v) {
                           if (_priceController.text.isNotEmpty) {
                             _updateTotal();
@@ -339,6 +348,7 @@ class _BookingPageState extends State<BookingPage> {
                     Expanded(
                       child: TextFormField(
                         controller: _childController,
+                        keyboardType: TextInputType.number,
                         onChanged: (v) {
                           if (_priceController.text.isNotEmpty) {
                             _updateTotal();
@@ -362,9 +372,16 @@ class _BookingPageState extends State<BookingPage> {
                       Expanded(
                         child: TextFormField(
                           controller: _noOfVegController,
+                          keyboardType: TextInputType.number,
                           validator: (value) {
+                            int v = int.parse(_adultController.text) +
+                                int.parse(_childController.text);
+                            int c = int.parse(_noOfVegController.text) +
+                                int.parse(_noOfNonVegController.text);
                             if (value!.isEmpty) {
-                              return 'Please enter the number of adults';
+                              return 'Please enter the number of children';
+                            } else if (v != c) {
+                              return 'Please enter valid Quantity';
                             }
                             return null;
                           },
@@ -378,9 +395,16 @@ class _BookingPageState extends State<BookingPage> {
                       Expanded(
                         child: TextFormField(
                           controller: _noOfNonVegController,
+                          keyboardType: TextInputType.number,
                           validator: (value) {
+                            int v = int.parse(_adultController.text) +
+                                int.parse(_childController.text);
+                            int c = int.parse(_noOfVegController.text) +
+                                int.parse(_noOfNonVegController.text);
                             if (value!.isEmpty) {
                               return 'Please enter the number of children';
+                            } else if (v != c) {
+                              return 'Please enter valid Quantity';
                             }
                             return null;
                           },
@@ -397,12 +421,14 @@ class _BookingPageState extends State<BookingPage> {
                       Expanded(
                         child: TextFormField(
                           controller: _priceController,
+                          keyboardType: TextInputType.number,
                           validator: (value) {
                             if (value!.isEmpty) {
                               return 'Please enter the price';
                             } else if (int.tryParse(value) == null) {
                               return 'Please remove floating value';
                             }
+                            return null;
                           },
                           decoration: const InputDecoration(
                             labelText: 'Price',
@@ -415,6 +441,7 @@ class _BookingPageState extends State<BookingPage> {
                       Expanded(
                         child: TextFormField(
                           controller: _advanceController,
+                          keyboardType: TextInputType.number,
                           validator: (value) {
                             if (value!.isEmpty) {
                               return 'Please enter the advance amount';
@@ -557,78 +584,68 @@ class _BookingPageState extends State<BookingPage> {
                     ],
                   ),
                 if (widget.camp != null)
-                  ElevatedButton(
-                    onPressed: () async {
-                      print("${_selectedDate}");
-                      if (_formKey.currentState!.validate()) {
-                        int l = 0;
-                        final data = await ApiService.fetchData();
-                        l = data.length;
+                  Row(
+                    children: [
+                      Expanded(
+                          child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                            primary: mainColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            minimumSize: Size(size * 0.4, 45)),
+                        child: const Text('Cancel'),
+                      )),
+                      width(5),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            try {
+                              if (_formKey.currentState!.validate()) {
+                                int l = 0;
+                                final data = await ApiService.fetchData();
+                                l = data.length;
 
-                        Customer customer = Customer(
-                            id: l + 1,
-                            name: _nameController.text,
-                            address: _addressController.text,
-                            email: _emailController.text,
-                            mobNo: _mobileController.text,
-                            adult: int.parse(_adultController.text),
-                            child: int.parse(_childController.text),
-                            vegPeopleCount: int.parse(_noOfVegController.text),
-                            nonVegPeopleCount:
-                                int.parse(_noOfNonVegController.text),
-                            bookingDate: date,
-                            groupType: _selectedGroupType,
-                            price: int.parse(_priceController.text),
-                            ticketFlag: _ticketFlag,
-                            advAmt: int.parse(_advanceController.text));
-                        if (await ApiService.addNew(customer)) {
-                          Email.sendMail(customer);
-                          // ignore: use_build_context_synchronously
-                          showDialog(
-                              context: context,
-                              builder: (_) => AlertDialog(
-                                    title: const Text("Booking Successful"),
-                                    icon: const Icon(Icons.check_circle_outline,
-                                        color: mainColor, size: 60),
-                                    content: const Text(
-                                        "Request for camp booking is approved. Have a taste of wild."),
-                                    actions: [
-                                      MaterialButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                            nextReplacement(
-                                                context,
-                                                ResponsiveLayout(
-                                                    mobileScaffold:
-                                                        MobileHomeScreen(),
-                                                    tabletScaffold:
-                                                        TabletHomeScreen(),
-                                                    laptopScaffold:
-                                                        LaptopHomeScreen()));
-                                          },
-                                          color: mainColor,
-                                          minWidth: double.infinity,
-                                          height: 40,
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(6)),
-                                          child: const Text(
-                                            "THANKS!",
-                                            style:
-                                                TextStyle(color: Colors.white),
-                                          ))
-                                    ],
-                                  ));
-                        }
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                        primary: mainColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                                Customer customer = Customer(
+                                    id: l + 1,
+                                    name: _nameController.text,
+                                    address: _addressController.text,
+                                    email: _emailController.text,
+                                    mobNo: _mobileController.text,
+                                    adult: int.parse(_adultController.text),
+                                    child: int.parse(_childController.text),
+                                    vegPeopleCount:
+                                        int.parse(_noOfVegController.text),
+                                    nonVegPeopleCount:
+                                        int.parse(_noOfNonVegController.text),
+                                    bookingDate: date,
+                                    groupType: _selectedGroupType,
+                                    price: int.parse(_priceController.text),
+                                    ticketFlag: _ticketFlag,
+                                    advAmt: int.parse(_advanceController.text));
+                                if (await ApiService.addNew(customer)) {
+                                  Email.sendMail(customer);
+                                  //ignore: use_build_context_synchronously
+                                  nextReplacement(
+                                      context,
+                                      OrderPage(
+                                          camp: widget.camp!,
+                                          customer: customer));
+                                }
+                              }
+                            } catch (e) {}
+                          },
+                          style: ElevatedButton.styleFrom(
+                              primary: mainColor,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              minimumSize: Size(size * 0.9, 45)),
+                          child: const Text('Confirm'),
                         ),
-                        minimumSize: Size(size * 0.9, 60)),
-                    child: const Text('Confirm'),
+                      ),
+                    ],
                   ),
                 height(5),
               ],

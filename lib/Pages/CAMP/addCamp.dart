@@ -1,7 +1,10 @@
 import 'dart:io';
+import 'package:camp_booking/Models/camp_model.dart';
 import 'package:camp_booking/Responsive_Layout/responsiveWidget.dart';
+import 'package:camp_booking/Services/api.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
@@ -53,6 +56,7 @@ class _AddCampState extends State<AddCamp> {
                     ResponsiveForm.responsiveForm(children: [
                       TextFormField(
                         controller: _cName,
+                        keyboardType: TextInputType.name,
                         validator: (value) {
                           if (value!.isEmpty) {
                             return 'Please enter your name';
@@ -66,6 +70,7 @@ class _AddCampState extends State<AddCamp> {
                       ),
                       TextFormField(
                         controller: _location,
+                        keyboardType: TextInputType.text,
                         validator: (value) {
                           if (value!.isEmpty) {
                             return 'Please enter your name';
@@ -82,6 +87,7 @@ class _AddCampState extends State<AddCamp> {
                           Expanded(
                             child: TextFormField(
                               controller: _fee,
+                              keyboardType: TextInputType.number,
                               validator: (value) {
                                 if (value!.isEmpty) {
                                   return 'Please enter your name';
@@ -98,6 +104,7 @@ class _AddCampState extends State<AddCamp> {
                           Expanded(
                             child: TextFormField(
                               controller: _brochure,
+                              keyboardType: TextInputType.text,
                               validator: (value) {
                                 if (value!.isEmpty) {
                                   return 'Please enter brochure';
@@ -241,6 +248,7 @@ class _AddCampState extends State<AddCamp> {
                           Expanded(
                             child: TextFormField(
                               controller: _planId,
+                              keyboardType: TextInputType.number,
                               validator: (value) {
                                 if (value!.isEmpty) {
                                   return 'Please enter campPlanId';
@@ -257,6 +265,7 @@ class _AddCampState extends State<AddCamp> {
                           Expanded(
                             child: TextFormField(
                               controller: _type,
+                              keyboardType: TextInputType.number,
                               validator: (value) {
                                 if (value!.isEmpty) {
                                   return 'Please enter camp type';
@@ -273,6 +282,7 @@ class _AddCampState extends State<AddCamp> {
                       ),
                       TextFormField(
                         controller: _controllerName,
+                        keyboardType: TextInputType.name,
                         validator: (value) {
                           if (value!.isEmpty) {
                             return 'Please enter controller name';
@@ -286,6 +296,7 @@ class _AddCampState extends State<AddCamp> {
                       ),
                       TextFormField(
                         controller: _viewDetails,
+                        keyboardType: TextInputType.text,
                         validator: (value) {
                           if (value!.isEmpty) {
                             return 'Please enter view details';
@@ -300,43 +311,60 @@ class _AddCampState extends State<AddCamp> {
                     ]),
                     height(10),
                     ElevatedButton(
-                      onPressed: () {
-                        // if (_formKey.currentState!.validate()) {
-                        showDialog(
-                            context: context,
-                            builder: (_) => AlertDialog(
-                                  title: const Text("Camp Add Successful"),
-                                  icon: const Icon(Icons.check_circle_outline,
-                                      color: mainColor, size: 60),
-                                  content: const Text(
-                                      "Request for camp booking is approved. Have a taste of wild."),
-                                  actions: [
-                                    MaterialButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                          nextReplacement(
-                                              context,
-                                              ResponsiveLayout(
-                                                  mobileScaffold:
-                                                      MobileHomeScreen(),
-                                                  tabletScaffold:
-                                                      TabletHomeScreen(),
-                                                  laptopScaffold:
-                                                      LaptopHomeScreen()));
-                                        },
-                                        color: mainColor,
-                                        minWidth: double.infinity,
-                                        height: 40,
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(6)),
-                                        child: const Text(
-                                          "THANKS!",
-                                          style: TextStyle(color: Colors.white),
-                                        ))
-                                  ],
-                                ));
-                        // }
+                      onPressed: () async {
+                        if (_formKey.currentState!.validate()) {
+                          Camp _camp = Camp(
+                              campId: 21,
+                              campName: _cName.text,
+                              campFee: int.parse(_fee.text),
+                              campBrochure: _brochure.text,
+                              campLocation: _location.text,
+                              campImageGroupId: 1,
+                              campPlanId: int.parse(_planId.text),
+                              campViewDetails: _viewDetails.text,
+                              controllerName: _controllerName.text,
+                              discountStatus: _discount,
+                              isActive: 0,
+                              titleImageUrl: _imageUrl,
+                              type: int.parse(_type.text),
+                              videoUrl: _videoUrl);
+
+                          if (await ApiService.addCamp(_camp)) {
+                            Fluttertoast.showToast(
+                                msg: "Added succesfully",
+                                backgroundColor: mainColor);
+                            // ignore: use_build_context_synchronously
+                            showDialog(
+                                barrierDismissible: true,
+                                context: context,
+                                builder: (_) => AlertDialog(
+                                      title: const Text("Camp Add Successful"),
+                                      icon: const Icon(
+                                          Icons.check_circle_outline,
+                                          color: mainColor,
+                                          size: 60),
+                                      content: const Text(
+                                          "Request for camp booking is approved. Have a taste of wild."),
+                                      actions: [
+                                        MaterialButton(
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                            },
+                                            color: mainColor,
+                                            minWidth: double.infinity,
+                                            height: 40,
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(6)),
+                                            child: const Text(
+                                              "THANKS!",
+                                              style: TextStyle(
+                                                  color: Colors.white),
+                                            ))
+                                      ],
+                                    ));
+                          }
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                           backgroundColor: mainColor,
