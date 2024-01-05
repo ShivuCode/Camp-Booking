@@ -7,8 +7,8 @@ import '../Models/customer_model.dart';
 
 class Email {
   static void sendMail(Customer customer) async {
-    String username = "vivo182034@hotmail.com";
-    final smtServer = hotmail(username, 'Vivvo!23');
+    String username = "pbind4545@gmail.com";
+    final smtServer = hotmail(username, 'shivani1pooja2');
     double total =
         customer.price * customer.adult + customer.price / 0.5 + customer.child;
     double rem = total - customer.advAmt;

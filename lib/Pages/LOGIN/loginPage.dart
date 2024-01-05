@@ -1,11 +1,16 @@
 // ignore: file_names
-import 'dart:async';
 
+import 'package:camp_booking/Pages/LOGIN/forgetPwd.dart';
+import 'package:camp_booking/Pages/LOGIN/signUp.dart';
 import 'package:flutter/material.dart';
 
 import 'package:camp_booking/constant.dart';
 
+import '../../Responsive_Layout/responsive_layout.dart';
 import '../../Services/api.dart';
+import '../HOME/laptopHomeScreen.dart';
+import '../HOME/mobileHomeScreen.dart';
+import '../HOME/tabletHomeScreen.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -63,12 +68,13 @@ class _LoginPageState extends State<LoginPage> {
                               height: 3,
                               color: mainColor,
                             ),
-                            height(20),
+                            height(25),
                             const Text("Use your email and password.",
                                 style: TextStyle(
                                     color: Colors.grey, fontSize: 12)),
                             height(10),
                             TextFormField(
+                              cursorColor: mainColor,
                               controller: email,
                               keyboardType: TextInputType.emailAddress,
                               validator: (value) {
@@ -85,6 +91,7 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             height(10),
                             TextFormField(
+                              cursorColor: mainColor,
                               obscureText: true,
                               keyboardType: TextInputType.visiblePassword,
                               controller: password,
@@ -96,51 +103,63 @@ class _LoginPageState extends State<LoginPage> {
                               },
                               decoration: dec("Password"),
                             ),
-                            height(10),
                             Align(
                               alignment: Alignment.centerRight,
                               child: TextButton(
-                                  onPressed: () {},
+                                  onPressed: () => nextReplacement(
+                                      context, const ForegetPassword()),
                                   child: Text("Forget Password",
                                       style: TextStyle(
                                           color: Colors.grey.shade400))),
                             ),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                  minimumSize: const Size(350, 60),
+                                  minimumSize: const Size(350, 45),
                                   backgroundColor: mainColor,
-                                  foregroundColor: Colors.white),
+                                  foregroundColor: Colors.black),
                               onPressed: () async {
                                 if (_formKey.currentState!.validate()) {
                                   _formKey.currentState!.save();
                                   setState(() {
                                     isLoad = true;
                                   });
-                                  await Future.delayed(const Duration(
-                                      milliseconds:
-                                          300)); // Add a 1-second delay
 
-                                  // ignore: use_build_context_synchronously
-                                  ApiService.loginUser(
-                                      context, email.text, password.text);
-                                  setState(() {
-                                    isLoad = false;
-                                  });
+                                  if (await ApiService.loginUser(
+                                      context, email.text, password.text)) {
+                                    // ignore: use_build_context_synchronously
+                                    nextReplacement(
+                                        context,
+                                        ResponsiveLayout(
+                                            mobileScaffold: MobileHomeScreen(),
+                                            tabletScaffold: TabletHomeScreen(),
+                                            laptopScaffold:
+                                                LaptopHomeScreen()));
+                                  } else {
+                                    setState(() {
+                                      isLoad = false;
+                                    });
+                                  }
                                 }
                               },
                               child: const Text("Sign In"),
                             ),
                             height(10),
-                            Text.rich(TextSpan(
-                                text: "Didn't have Account | ",
-                                style: TextStyle(color: Colors.grey.shade400),
-                                children: const [
-                                  TextSpan(
-                                      text: "Register Now",
-                                      style: TextStyle(
-                                          color: mainColor,
-                                          fontStyle: FontStyle.italic))
-                                ])),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "Didn't have Account | ",
+                                  style: TextStyle(color: Colors.grey.shade400),
+                                ),
+                                GestureDetector(
+                                    onTap: () =>
+                                        nextScreen(context, const SignUp()),
+                                    child: const Text('Register',
+                                        style: TextStyle(
+                                            color: mainColor,
+                                            fontStyle: FontStyle.italic)))
+                              ],
+                            ),
                             height(10),
                             if (isLoad)
                               Center(
@@ -167,7 +186,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
                     const Text("Hello, Welcome",
                         style: TextStyle(
-                            color: Colors.white,
+                            color: Colors.black,
                             fontSize: 26,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 1)),
@@ -175,7 +194,7 @@ class _LoginPageState extends State<LoginPage> {
                     Container(
                       width: 70,
                       height: 3,
-                      color: Colors.white,
+                      color: Colors.black,
                     ),
                     height(50),
                     SizedBox(
@@ -186,7 +205,7 @@ class _LoginPageState extends State<LoginPage> {
                             textAlign: TextAlign.center,
                             style: TextStyle(
                                 fontSize: 20,
-                                color: Colors.white,
+                                color: Colors.black,
                                 fontWeight: FontWeight.w100))),
                   ]),
                 ))

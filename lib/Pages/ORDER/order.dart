@@ -1,6 +1,3 @@
-import 'dart:io';
-
-import 'package:camp_booking/Pages/CAMP/campTile.dart';
 import 'package:camp_booking/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -9,6 +6,7 @@ import 'package:pay/pay.dart';
 
 import '../../Models/camp_model.dart';
 import '../../Models/customer_model.dart';
+import '../../variables.dart';
 // import '../../Responsive_Layout/responsive_layout.dart';
 // import '../HOME/laptopHomeScreen.dart';
 // import '../HOME/mobileHomeScreen.dart';
@@ -56,9 +54,19 @@ class _OrderPageState extends State<OrderPage>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text("Review Order", style: TextStyle(fontSize: 20)),
+                  Row(
+                    children: [
+                      IconButton(
+                          onPressed: () => nextReplacement(context, home),
+                          icon: const Icon(FontAwesomeIcons.backward)),
+                      const Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text("Review Order",
+                              style: TextStyle(fontSize: 20)),
+                        ),
+                      ),
+                    ],
                   ),
                   height(20),
                   Row(
@@ -236,57 +244,62 @@ class _OrderPageState extends State<OrderPage>
                                 borderRadius: BorderRadius.circular(8),
                                 image: DecorationImage(
                                     onError: (exception, stackTrace) => {},
-                                    image: FileImage(
-                                        File(widget.camp.titleImageUrl)))),
+                                    image: NetworkImage(
+                                        "https://pawnacamp.in/Content/img/Camp/${widget.camp.titleImageUrl}"),
+                                    fit: BoxFit.cover)),
                           ),
                           width(8),
-                          Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(widget.camp.campName,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 18)),
-                              height(8),
-                              const SizedBox(
-                                width: 200,
-                                child: Text(
-                                  "Beautiful Couple Camping With Decoration light, food & support.",
-                                  softWrap: true,
+                          Expanded(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(widget.camp.campName,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 18)),
+                                height(8),
+                                const SizedBox(
+                                  width: 200,
+                                  child: Text(
+                                    "Beautiful Couple Camping With Decoration light, food & support.",
+                                    softWrap: true,
+                                    style: TextStyle(fontSize: 12),
+                                  ),
                                 ),
-                              ),
-                              height(5),
-                              Text.rich(TextSpan(
-                                  text: "${widget.camp.discountStatus}%OFF",
-                                  style: const TextStyle(color: Colors.blue),
-                                  children: [
-                                    TextSpan(
-                                        text: " ₹ ${widget.customer.price}",
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.w400,
-                                            color: Colors.black))
-                                  ])),
-                              height(5),
-                              Text.rich(TextSpan(
-                                  text: "Total Person: ",
-                                  style: const TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold),
-                                  children: [
-                                    TextSpan(
-                                        text:
-                                            "${widget.customer.adult} Adult, ",
-                                        style: const TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w400)),
-                                    TextSpan(
-                                        text: "${widget.customer.adult} Child",
-                                        style: const TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w400)),
-                                  ])),
-                            ],
+                                height(5),
+                                Text.rich(TextSpan(
+                                    text: "${widget.camp.discountStatus}%OFF",
+                                    style: const TextStyle(color: Colors.blue),
+                                    children: [
+                                      TextSpan(
+                                          text: " ₹ ${widget.customer.price}",
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.w400,
+                                              color: Colors.black))
+                                    ])),
+                                height(5),
+                                Text.rich(TextSpan(
+                                    text: "Total Person: ",
+                                    style: const TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold),
+                                    children: [
+                                      TextSpan(
+                                          text:
+                                              "${widget.customer.adult} Adult, ",
+                                          style: const TextStyle(
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.w400)),
+                                      TextSpan(
+                                          text:
+                                              "${widget.customer.adult} Child",
+                                          style: const TextStyle(
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.w400)),
+                                    ])),
+                              ],
+                            ),
                           )
                         ])),
                     Divider(
@@ -395,7 +408,22 @@ class _OrderPageState extends State<OrderPage>
                     ),
                     height(60)
                   ]),
-              Center(),
+              Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                        width: size * 0.5,
+                        child: Opacity(
+                          opacity: 0.3,
+                          child: Image.network(
+                              "https://th.bing.com/th/id/OIP.oeTT4hWRLH7_cRiX2iT-wgHaHL?pid=ImgDet&rs=1"),
+                        )),
+                    const Text("Account connection failed"),
+                    height(size * 0.5)
+                  ],
+                ),
+              ),
             ],
           )),
     );

@@ -39,8 +39,8 @@ class HalfRounded extends StatelessWidget {
 }
 
 // ignore: non_constant_identifier_names
-Widget ListSkeleton() => SizedBox(
-      width: 270,
+Widget ListSkeleton(size) => SizedBox(
+      width: size.width > 600 ? 400 : double.infinity,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

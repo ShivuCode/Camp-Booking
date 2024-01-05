@@ -24,7 +24,7 @@ class Invoice extends StatefulWidget {
 }
 
 class _InvoiceState extends State<Invoice> {
-  late Camp camp;
+  Camp? camp;
   List<Customer> customers = [];
   List<Customer> temp = [];
   final scrollController = ScrollController();
@@ -35,7 +35,7 @@ class _InvoiceState extends State<Invoice> {
   bool showMore = false;
   bool stop = false;
   void fetchData() async {
-    final data = await ApiService.fetchDataPage(page, 5);
+    final data = await ApiService.fetchDataPage(page, 5, context);
     if (data.isNotEmpty) {
       for (var element in data['items']) {
         setState(() {
@@ -75,7 +75,7 @@ class _InvoiceState extends State<Invoice> {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       body: Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: const EdgeInsets.only(top: 12, left: 12, right: 12),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             const Text("All Camp Bookings",
@@ -146,159 +146,193 @@ class _InvoiceState extends State<Invoice> {
                         child: ScrollConfiguration(
                           behavior: ScrollGlowEffect(),
                           child: SingleChildScrollView(
-                            child: Column(
-                                children: List.generate(
-                                    5, (index) => ListSkeleton())),
+                            child: Center(
+                              child: Wrap(
+                                  runSpacing: 5,
+                                  spacing: 5,
+                                  children: List.generate(
+                                      5, (index) => ListSkeleton(size))),
+                            ),
                           ),
                         ),
                       )
                     : Expanded(
                         child: ScrollConfiguration(
                           behavior: ScrollGlowEffect(),
-                          child: ListView.builder(
-                              scrollDirection: Axis.vertical,
-                              controller: scrollController,
-                              itemCount: showMore
-                                  ? customers.length + 1
-                                  : customers.length,
-                              itemBuilder: (_, i) {
-                                if (i < customers.length) {
-                                  final total =
-                                      (customers[i].price * customers[i].adult +
-                                          ((customers[i].price * 0.45) *
-                                              customers[i].child));
+                          child: SingleChildScrollView(
+                            controller: scrollController,
+                            child: Center(
+                              child: Wrap(
+                                  runSpacing: 5,
+                                  spacing: 5,
+                                  children: List.generate(
+                                      showMore
+                                          ? customers.length + 1
+                                          : customers.length, (i) {
+                                    if (i < customers.length) {
+                                      final total = (customers[i].price *
+                                                  customers[i].adult +
+                                              ((customers[i].price / 2) *
+                                                  customers[i].child)) -
+                                          customers[i].discount;
 
-                                  return Container(
-                                    width: size.width > 600 ? 270 : 270,
-                                    padding: const EdgeInsets.only(
-                                        top: 10, left: 10, right: 10),
-                                    child: Column(
-                                      children: [
-                                        Row(children: [
-                                          Container(
-                                            height: 100,
-                                            width: 100,
-                                            decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                                image: DecorationImage(
-                                                    onError: (exception,
-                                                            stackTrace) =>
-                                                        {},
-                                                    image: NetworkImage(
-                                                        camp.titleImageUrl),
-                                                    fit: BoxFit.cover)),
-                                          ),
-                                          width(8),
-                                          Expanded(
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text("id: ${customers[i].id}",
-                                                    style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w400,
-                                                        fontSize: 14)),
-                                                height(3),
-                                                Text(customers[i].name,
-                                                    style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w400,
-                                                        fontSize: 14)),
-                                                height(8),
-                                                const Text(
-                                                  "Beautiful Couple Camping With Decoration light, food & support.",
-                                                  softWrap: true,
+                                      return Container(
+                                        width: size.width > 700
+                                            ? 335
+                                            : double.infinity,
+                                        padding: const EdgeInsets.only(
+                                            top: 10, left: 10, right: 10),
+                                        child: Column(
+                                          children: [
+                                            Row(children: [
+                                              Container(
+                                                height: 100,
+                                                width: 100,
+                                                decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
+                                                    image: DecorationImage(
+                                                        onError: (exception,
+                                                                stackTrace) =>
+                                                            {},
+                                                        image: NetworkImage(
+                                                            "https://pawnacampappprod.titwi.in/content/camp/${camp?.titleImageUrl ?? ''}"),
+                                                        fit: BoxFit.cover)),
+                                              ),
+                                              width(8),
+                                              Expanded(
+                                                child: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                        "Id: ${customers[i].id}",
+                                                        style: const TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w400,
+                                                            fontSize: 14)),
+                                                    height(3),
+                                                    Text(customers[i].name,
+                                                        style: const TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w400,
+                                                            fontSize: 14)),
+                                                    height(8),
+                                                    const Text(
+                                                      "Beautiful Couple Camping With Decoration light, food & support.",
+                                                      softWrap: true,
+                                                    ),
+                                                    height(10),
+                                                    Text("Total: ₹ $total",
+                                                        style: const TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color:
+                                                                Colors.black))
+                                                  ],
                                                 ),
-                                                height(10),
-                                                Text("Total: ₹ $total",
-                                                    style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                        color: Colors.black))
+                                              )
+                                            ]),
+                                            height(10),
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                    child: ElevatedButton(
+                                                  onPressed: () {
+                                                    nextReplacement(
+                                                        context,
+                                                        ResponsiveLayout(
+                                                            mobileScaffold:
+                                                                MobileHomeScreen(
+                                                              pos: 'booking',
+                                                              customer:
+                                                                  customers[i],
+                                                            ),
+                                                            tabletScaffold:
+                                                                TabletHomeScreen(
+                                                                    pos:
+                                                                        'booking',
+                                                                    customer:
+                                                                        customers[
+                                                                            i]),
+                                                            laptopScaffold:
+                                                                LaptopHomeScreen(
+                                                                    pos:
+                                                                        'booking',
+                                                                    customer:
+                                                                        customers[
+                                                                            i])));
+                                                  },
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                          backgroundColor:
+                                                              mainColor,
+                                                          shape:
+                                                              RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        8),
+                                                          ),
+                                                          minimumSize:
+                                                              const Size(
+                                                                  120, 40)),
+                                                  child: const Text('Edit'),
+                                                )),
+                                                width(5),
+                                                Expanded(
+                                                    child: ElevatedButton(
+                                                  onPressed: () async {
+                                                    String path =
+                                                        await PdfService
+                                                            .generatePDF(
+                                                                context,
+                                                                customers[i]);
+
+                                                    if (path.isNotEmpty) {
+                                                      // ignore: use_build_context_synchronously
+                                                      nextScreen(
+                                                          context,
+                                                          PdfViewer(
+                                                              path: path));
+                                                    }
+                                                  },
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                          backgroundColor:
+                                                              mainColor,
+                                                          shape:
+                                                              RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        8),
+                                                          ),
+                                                          minimumSize:
+                                                              const Size(
+                                                                  120, 40)),
+                                                  child: const Text(
+                                                      'View Invoice'),
+                                                ))
                                               ],
                                             ),
-                                          )
-                                        ]),
-                                        height(10),
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                                child: ElevatedButton(
-                                              onPressed: () {
-                                                nextReplacement(
-                                                    context,
-                                                    ResponsiveLayout(
-                                                        mobileScaffold:
-                                                            MobileHomeScreen(
-                                                          pos: 'booking',
-                                                          customer:
-                                                              customers[i],
-                                                        ),
-                                                        tabletScaffold:
-                                                            TabletHomeScreen(
-                                                                pos: 'booking',
-                                                                customer:
-                                                                    customers[
-                                                                        i]),
-                                                        laptopScaffold:
-                                                            LaptopHomeScreen(
-                                                                pos: 'booking',
-                                                                customer:
-                                                                    customers[
-                                                                        i])));
-                                              },
-                                              style: ElevatedButton.styleFrom(
-                                                  primary: mainColor,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            8),
-                                                  ),
-                                                  minimumSize:
-                                                      const Size(120, 35)),
-                                              child: const Text('Edit'),
-                                            )),
-                                            width(5),
-                                            Expanded(
-                                                child: ElevatedButton(
-                                              onPressed: () async {
-                                                String path = await PdfService
-                                                    .generatePDF(customers[i]);
-
-                                                if (path.isNotEmpty) {
-                                                  // ignore: use_build_context_synchronously
-                                                  nextScreen(context,
-                                                      PdfViewer(path: path));
-                                                }
-                                              },
-                                              style: ElevatedButton.styleFrom(
-                                                  primary: mainColor,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            8),
-                                                  ),
-                                                  minimumSize:
-                                                      const Size(120, 35)),
-                                              child: const Text('View Invoice'),
-                                            ))
+                                            height(5),
+                                            const Divider(),
                                           ],
                                         ),
-                                        height(5),
-                                        const Divider(),
-                                      ],
-                                    ),
-                                  );
-                                } else {
-                                  const Center(
-                                      child: CircularProgressIndicator(
-                                          color: Colors.grey));
-                                }
-                                return null;
-                              }),
+                                      );
+                                    } else {
+                                      const Center(
+                                          child: CircularProgressIndicator(
+                                              color: Colors.grey));
+                                    }
+                                    return const Center();
+                                  })),
+                            ),
+                          ),
                         ),
                       )
           ])),
@@ -327,27 +361,18 @@ class _InvoiceState extends State<Invoice> {
       isLoad = true;
     });
 
-    int? intValue = int.tryParse(value);
-    double? doubleValue = double.tryParse(value);
-
-    if (intValue != null) {
-      final data = await ApiService.findByID(intValue);
-      if (data.isNotEmpty) {
+    final data = await ApiService.findByName(value, context);
+    if (data.isNotEmpty) {
+      for (final element in data) {
         customers = [];
-        customers.add(Customer.fromJson(data));
-      } else {
-        showNoContent = true;
+        setState(() {
+          customers.add(Customer.fromJson(element));
+        });
       }
-    } else if (doubleValue != null) {
     } else {
-      final data = await ApiService.findByName(value);
-      if (data.isNotEmpty) {
-        customers = [];
-        customers.add(Customer.fromJson(data[0]));
-      } else {
-        showNoContent = true;
-      }
+      showNoContent = true;
     }
+
     setState(() {
       isLoad = !isLoad;
     });

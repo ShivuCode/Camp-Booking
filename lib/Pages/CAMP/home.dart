@@ -2,16 +2,16 @@ import 'dart:async';
 
 import 'package:camp_booking/Models/camp_model.dart';
 
-import 'package:camp_booking/Responsive_Layout/responsive_layout.dart';
 import 'package:camp_booking/Services/api.dart';
+import 'package:camp_booking/Widgets/animatedText.dart';
 
 import 'package:camp_booking/Widgets/skelton.dart';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../HOME/laptopHomeScreen.dart';
-import '../HOME/mobileHomeScreen.dart';
-import '../HOME/tabletHomeScreen.dart';
+
 import '../../constant.dart';
+import 'card.dart';
 
 // ignore: camel_case_types
 class campTile extends StatefulWidget {
@@ -26,27 +26,21 @@ class _campTileState extends State<campTile>
     with SingleTickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   late PageController _pageController;
-  int slidePage = 1;
-  late Timer _timer;
+  int slidePage = 2;
   int page = 1;
   bool searchtab = false;
   bool search = false;
   bool isLoad = false;
   bool stop = false;
+  Timer? timer;
   List<Camp> searchList = [];
   final ScrollController _scrollController = ScrollController();
   List<Camp> campList = [];
   fetchData() async {
     try {
-      if (page == 1) {
-        setState(() {
-          campList = [];
-        });
-      }
       final data = await ApiService.fetchCampData(page, 4);
       if (data.isNotEmpty) {
         for (final element in data['items']) {
-          // print(element['titleImageUrl']);
           setState(() {
             campList.add(Camp.fromJson(element));
           });
@@ -61,47 +55,39 @@ class _campTileState extends State<campTile>
     }
   }
 
-  testing() async {
-    while (true) {
-      try {
-        await Future.delayed(const Duration(seconds: 3));
-        setState(() {
-          _pageController.animateToPage(
-            slidePage,
-            duration: const Duration(milliseconds: 350),
-            curve: Curves.easeIn,
-          );
-        });
-      } catch (e) {
-      } finally {
-        if (slidePage != campList.length - 1) {
-          setState(() {
-            slidePage = slidePage + 1;
-          });
-        } else {
-          setState(() {
-            slidePage = 0;
-          });
-        }
+  void slide() {
+    timer = Timer(const Duration(seconds: 5), () {
+      if (slidePage >= campList.length - 1) {
+        slidePage = 0;
+      } else {
+        slidePage += 1;
       }
-    }
+      setState(() {
+        _pageController.animateToPage(slidePage,
+            duration: const Duration(milliseconds: 300), curve: Curves.linear);
+      });
+      slide();
+    });
   }
 
   @override
   void initState() {
     fetchData();
-    _pageController = PageController(viewportFraction: 0.5);
-    testing();
+    _pageController =
+        PageController(viewportFraction: 0.8, initialPage: slidePage);
+    slide();
     _scrollController.addListener(scrollController);
+    // MyNotification.showNotification(
+    //     "Welcome!", "Welcome to Pawna Camp Booking app");
     super.initState();
   }
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    timer!.cancel();
     _pageController.dispose();
-
     super.dispose();
+    _scrollController.dispose();
   }
 
   void scrollController() async {
@@ -109,23 +95,29 @@ class _campTileState extends State<campTile>
       // ignore: unrelated_type_equality_checks
       if (_scrollController.position.pixels ==
           _scrollController.position.maxScrollExtent) {
-        page++;
+        page += 1;
         fetchData();
       }
     }
   }
 
-  void findCamp(value) {
-    final data = campList.where((camp) => camp.campLocation
-        .toLowerCase()
-        .contains(value.toString().toLowerCase()));
-    if (data.isNotEmpty) {
-      searchList = [];
-      searchList.addAll(data);
-    } else {
-      setState(() {
-        search = false;
-      });
+  void findCamp(value) async {
+    try {
+      final data = await ApiService.fetchCampBySearchName(value);
+      if (data.isNotEmpty) {
+        searchList = [];
+        for (final element in data['items']) {
+          setState(() {
+            searchList.add(Camp.fromJson(element));
+          });
+        }
+      } else {
+        searchList = [];
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
     }
   }
 
@@ -146,7 +138,9 @@ class _campTileState extends State<campTile>
                 "Camp with peace of mind.",
                 style: TextStyle(fontSize: 28, color: mainColor),
               ),
-              const Text("Where do you want to go?"),
+              AnimatedText(
+                text: "Where do you want to go?",
+              ),
               height(10),
               Container(
                 height: 45,
@@ -175,7 +169,7 @@ class _campTileState extends State<campTile>
                             border: InputBorder.none,
                             prefixIcon: Icon(Icons.search),
                             prefixIconColor: mainColor,
-                            hintText: 'Search'),
+                            hintText: 'Ex. New Special, Couple etc.'),
                       ),
                     ),
                     Container(
@@ -247,7 +241,6 @@ class _campTileState extends State<campTile>
               SizedBox(
                   height: 250,
                   child: PageView.builder(
-                      reverse: true,
                       onPageChanged: ((value) => setState(() {
                             page = value;
                           })),
@@ -267,151 +260,12 @@ class _campTileState extends State<campTile>
                 "Recommended",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
               ),
-              Center(
-                  child: isLoad
-                      ? campSkelton(size)
-                      : camp(context, size, campList))
+              height(5),
+              isLoad ? campSkelton(size) : camp(context, size, campList)
             ]),
           ),
         ),
       ),
     );
   }
-}
-
-campo(context, i, page, List<Camp> campList) => GestureDetector(
-      onTap: () => nextScreen(
-          context,
-          ResponsiveLayout(
-              mobileScaffold: MobileHomeScreen(
-                pos: 'booking',
-                camp: campList[i],
-              ),
-              tabletScaffold:
-                  TabletHomeScreen(pos: 'booking', camp: campList[i]),
-              laptopScaffold:
-                  LaptopHomeScreen(pos: 'booking', camp: campList[i]))),
-      child: Container(
-        margin: const EdgeInsets.all(10),
-        width: page == i ? 200 : 190,
-        height: page == i ? 260 : 240,
-        alignment: Alignment.bottomLeft,
-        decoration: BoxDecoration(
-            boxShadow: [
-              if (page == i)
-                BoxShadow(
-                  color: Colors.grey.shade300,
-                  spreadRadius: 4,
-                  blurRadius: 10,
-                )
-            ],
-            borderRadius: BorderRadius.circular(10),
-            image: DecorationImage(
-                onError: (exception, stackTrace) => {},
-                image: NetworkImage(
-                    "https://pawnacamp.in/Content/img/Camp/${campList[i].titleImageUrl}"),
-                fit: BoxFit.cover)),
-        child: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(10),
-                  bottomRight: Radius.circular(10))),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      campList[i].campName,
-                      style: const TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-              ),
-              height(5),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    campList[i].campLocation,
-                    style: const TextStyle(
-                        fontSize: 10, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    "-- Rs ${campList[i].campFee}",
-                    style: const TextStyle(
-                        fontSize: 10, fontWeight: FontWeight.bold),
-                  )
-                ],
-              )
-            ],
-          ),
-        ),
-      ),
-    );
-
-Widget camp(context, double size, List<Camp> campList) {
-  return Wrap(
-      children: List.generate(
-          campList.length,
-          (i) => Container(
-              padding: const EdgeInsets.all(5),
-              width: size > 600 ? 200 : size * 0.47,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: size > 600 ? 200 : size * 0.45,
-                    height: size > 600 ? 200 : size * 0.45,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        image: DecorationImage(
-                            onError: (exception, stackTrace) => {},
-                            image: NetworkImage(
-                                "https://pawnacamp.in/Content/img/Camp/${campList[i].titleImageUrl}"),
-                            fit: BoxFit.cover)),
-                  ),
-                  height(5),
-                  Text(
-                    campList[i].campName,
-                    style: const TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.bold),
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                          child: Text(campList[i].campLocation,
-                              style: const TextStyle(
-                                  fontSize: 10, fontWeight: FontWeight.w400))),
-                      Text("--Rs.${campList[i].campFee}",
-                          style: const TextStyle(
-                              fontSize: 10, fontWeight: FontWeight.bold))
-                    ],
-                  ),
-                  height(5),
-                  ElevatedButton(
-                      onPressed: () => nextScreen(
-                          context,
-                          ResponsiveLayout(
-                              mobileScaffold: MobileHomeScreen(
-                                pos: 'booking',
-                                camp: campList[i],
-                              ),
-                              tabletScaffold: TabletHomeScreen(
-                                  pos: 'booking', camp: campList[i]),
-                              laptopScaffold: LaptopHomeScreen(
-                                  pos: 'booking', camp: campList[i]))),
-                      style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all(mainColor),
-                          minimumSize:
-                              MaterialStateProperty.all(const Size(100, 35))),
-                      child: const Text("Book Now")),
-                  height(5)
-                ],
-              ))));
 }

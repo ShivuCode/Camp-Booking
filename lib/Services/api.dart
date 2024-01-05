@@ -1,16 +1,15 @@
 import 'dart:convert';
-import 'dart:io';
+
 import 'package:camp_booking/Models/vendor_model.dart';
-import 'package:camp_booking/Pages/LOGIN/loginPage.dart';
+import 'package:camp_booking/Services/database.dart';
+
 import 'package:camp_booking/constant.dart';
-import 'package:camp_booking/Pages/HOME/laptopHomeScreen.dart';
-import 'package:camp_booking/Pages/HOME/mobileHomeScreen.dart';
-import 'package:camp_booking/Pages/HOME/tabletHomeScreen.dart';
-import 'package:camp_booking/Responsive_Layout/responsive_layout.dart';
+
 import 'package:camp_booking/main.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+
 import 'package:http/http.dart' as http;
+
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -18,246 +17,313 @@ import '../Models/camp_model.dart';
 import '../Models/customer_model.dart';
 
 class ApiService {
+  static int userId = 0;
+  static int role = 0;
   //authentication by email or password
-  static void loginUser(context, email, password) async {
-    Map<String, String> header = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    };
+  static Future<bool> loginUser(context, email, password) async {
     final msg = jsonEncode({"name": email, "password": password});
 
     try {
       var response = await http.post(
-        Uri.parse('https://titwi.in/api/login/authenticate'),
-        headers: header,
+        Uri.parse('https://PawnacampAppProd.titwi.in/api/login/authenticate'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
         body: msg,
       );
 
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
-        final myToken = jsonResponse['token'];
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        prefs.setString('token', myToken);
-        nextReplacement(
-            context,
-            ResponsiveLayout(
-                mobileScaffold: MobileHomeScreen(),
-                tabletScaffold: TabletHomeScreen(),
-                laptopScaffold: LaptopHomeScreen()));
+        String myToken = jsonResponse['token'];
+
+        userId = int.parse(JwtDecoder.decode(myToken)['Id']);
+        role = int.parse(JwtDecoder.decode(myToken)['RolesId']);
+        DbHelper.saveData(myToken, userId, role);
+
+        return true;
       } else if (response.statusCode == 401) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text("Something Incorrect")));
+        myToast(context, "Something written wrong");
+        return false;
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Something went wrong")));
+        myToast(context, "Something went wrong");
+        return false;
       }
     } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.toString())));
-    }
-  }
-
-  //getting all customers from api
-  static Future<List> fetchData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = prefs.getString('token') ?? '';
-    final response = await http.get(
-        Uri.parse('https://titwi.in/api/customer/all'),
-        headers: {"Authorization": "Bearer $token", "Accept": "*/*"});
-    if (response.statusCode == 200) {
-      final jsonResponse = jsonDecode(response.body);
-      return jsonResponse;
-    } else {
-      return [];
-    }
-  }
-
-  //fetch customer by page and limit
-  static Future<Map<String, dynamic>> fetchDataPage(page, noOfData) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = prefs.getString('token') ?? '';
-
-    final response = await http.get(
-        Uri.parse('https://titwi.in/api/customer/$page/$noOfData'),
-        headers: {"Authorization": "Bearer $token", "Accept": "*/*"});
-    if (response.statusCode == 200) {
-      final jsonResponse = jsonDecode(response.body);
-
-      return jsonResponse;
-    } else {
-      if (kDebugMode) {
-        print("Error");
-      }
-      return {};
-    }
-  }
-
-  //add customer
-  static Future<bool> addNew(Customer customer) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = prefs.getString('token') ?? '';
-
-    final response = await http.post(
-        Uri.parse('https://titwi.in/api/customer/add'),
-        headers: {
-          "Authorization": "Bearer $token",
-          "Content-Type": "application/json"
-        },
-        body: jsonEncode(customer.toJson()));
-    if (response.statusCode == 200) {
-      return true;
-    } else {
-      if (kDebugMode) {
-        print(response.body);
-      }
+      myToast(context, e.toString());
       return false;
     }
   }
 
-  //fetch customer by id
-  static Future<Map<String, dynamic>> findByID(id) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = prefs.getString('token') ?? '';
-    final response = await http.get(
-        Uri.parse('https://titwi.in/api/customer/$id'),
-        headers: {"Authorization": "Bearer $token", "Accept": "*/*"});
-    if (response.statusCode == 200) {
-      final jsonResponse = jsonDecode(response.body);
-      return jsonResponse;
-    } else {
+  //getting all customers from api
+  static Future<List> fetchData(context) async {
+    String token = await DbHelper.getToken();
+    try {
+      final response = await http.get(
+          Uri.parse('https://PawnacampAppProd.titwi.in/api/customer/all'),
+          headers: {"Authorization": "Bearer $token", "Accept": "*/*"});
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        return jsonResponse;
+      } else {
+        myToast(context, "Try again");
+        return [];
+      }
+    } catch (e) {
+      myToast(context, e.toString());
+      return [];
+    }
+  }
+  //server error-------------------------------------------------------
+
+  //fetch customer by page and limit
+  static Future<Map<String, dynamic>> fetchDataPage(
+      page, noOfDatam, context) async {
+    String token = await DbHelper.getToken();
+    int id = await DbHelper.getId();
+
+    try {
+      final response = await http.get(
+          Uri.parse(
+              'https://PawnacampAppProd.titwi.in/api/customer/$id/$page/$noOfDatam'),
+          headers: {"Authorization": "Bearer $token", "Accept": "*/*"});
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+
+        return jsonResponse;
+      } else {
+        if (kDebugMode) {
+          myToast(context, response.body.toString());
+        }
+        return {};
+      }
+    } catch (e) {
+      myToast(context, e.toString());
       return {};
     }
   }
+  //server error-------------------------------------------------------
 
-  //fetch customer by Name
-  static Future<List<dynamic>> findByName(name) async {
+  //add customer
+  static Future<bool> addNew(context, Customer customer) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String token = prefs.getString('token') ?? '';
-    final response = await http.get(
-        Uri.parse('https://titwi.in/api/customer/$name/1/5'),
-        headers: {"Authorization": "Bearer $token", "Accept": "*/*"});
-    if (response.statusCode == 200) {
-      final jsonResponse = jsonDecode(response.body);
-      return jsonResponse;
-    } else {
+
+    try {
+      final response = await http.post(
+          Uri.parse('https://PawnacampAppProd.titwi.in/api/customer/add'),
+          headers: {
+            "Authorization": "Bearer $token",
+            "Content-Type": "application/json"
+          },
+          body: jsonEncode(customer.toJson()));
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        if (kDebugMode) {
+          myToast(context, "Error: ${response.statusCode}");
+        }
+        return false;
+      }
+    } catch (e) {
+      myToast(context, e.toString());
+      return false;
+    }
+  }
+
+  //fetch customer by Name with lazy loading
+  static Future<List<dynamic>> findByName(context, name) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('token') ?? '';
+    int userId = await DbHelper.getId();
+    try {
+      final response = await http.get(
+          Uri.parse(
+              'https://PawnacampAppProd.titwi.in/api/customer/$userId/$name/1/5'),
+          headers: {"Authorization": "Bearer $token", "Accept": "*/*"});
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        return jsonResponse['items'];
+      } else {
+        return [];
+      }
+    } catch (e) {
+      myToast(context, e.toString());
       return [];
     }
   }
 
   //fetch customer by formdate - todate
-  static Future<List<dynamic>> findByFromToDate(formDate, toDate, page) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = prefs.getString('token') ?? '';
-    final response = await http.get(
-        Uri.parse('https://titwi.in/api/customer/$formDate/$toDate/$page/14'),
-        headers: {"Authorization": "Bearer $token", "Accept": "*/*"});
-    if (response.statusCode == 200) {
-      final jsonResponse = jsonDecode(response.body);
-      return jsonResponse;
-    } else {
+  static Future<List<dynamic>> findByFromToDate(
+      context, formDate, toDate, page) async {
+    String token = await DbHelper.getToken();
+    int id = await DbHelper.getId();
+    try {
+      final response = await http.get(
+          Uri.parse(
+              'https://PawnacampAppProd.titwi.in/api/customer/$id/$formDate/$toDate/$page/17'),
+          headers: {"Authorization": "Bearer $token", "Accept": "*/*"});
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        return jsonResponse;
+      } else {
+        return [];
+      }
+    } catch (e) {
+      myToast(context, e.toString());
       return [];
     }
   }
 
   //update customer
-  static Future<bool> update(Customer customer) async {
-    print(customer.toJson());
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = prefs.getString('token') ?? '';
+  static Future<bool> update(context, Customer customer) async {
+    String token = await DbHelper.getToken();
 
-    final response = await http.put(
-      Uri.parse('https://titwi.in/api/customer/${customer.id}'),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer $token"
-      },
-      body: jsonEncode(customer.toJson()),
-    );
-    if (response.statusCode == 200) {
-      return true;
-    } else {
-      if (kDebugMode) {
-        print(response.body);
+    try {
+      final response = await http.put(
+        Uri.parse(
+            'https://PawnacampAppProd.titwi.in/api/customer/${customer.id}'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          "Authorization": "Bearer $token"
+        },
+        body: jsonEncode(customer.toJson()),
+      );
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        if (kDebugMode) {
+          myToast(context, "Error: ${response.statusCode}");
+        }
+        return false;
       }
+    } catch (e) {
+      myToast(context, e.toString());
       return false;
     }
   }
 
   //camps detail by page and limit
   static Future<Map<String, dynamic>> fetchCampData(page, noOfData) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = prefs.getString('token') ?? '';
+    String token = await DbHelper.getToken();
+    int id = await DbHelper.getId();
 
     final response = await http.get(
-        Uri.parse('https://titwi.in/api/camp/$page/$noOfData'),
+        Uri.parse(
+            'https://PawnacampAppProd.titwi.in/api/camp/$id/$page/$noOfData'),
         headers: {"Authorization": "Bearer $token", "Accept": "*/*"});
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
-
       return jsonResponse;
     } else {
       if (kDebugMode) {
         print("Error");
+        print(response.body);
       }
       return {};
     }
   }
 
   //add camp
-  static Future<bool> addCamp(Camp camp) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = prefs.getString('token') ?? '';
+  static Future<bool> addCamp(context, Camp camp) async {
+    String token = await DbHelper.getToken();
+    final http.BaseResponse response;
+    try {
+      final url = Uri.parse('https://PawnacampAppProd.titwi.in/api/Camp/add');
+      final resquest = http.MultipartRequest('POST', url);
+      resquest.headers.addAll({
+        "Authorization": "Bearer $token",
+        "Content-Type": "application/json"
+      });
+      resquest.fields.addAll(camp.toJson());
+      if (camp.videoUrl.isEmpty) {
+        resquest.files.add(await http.MultipartFile.fromPath(
+            'TitleImageUrl', camp.titleImageUrl));
+        response = await resquest.send();
+      } else {
+        resquest.files.add(await http.MultipartFile.fromPath(
+            'TitleImageUrl', camp.titleImageUrl));
+        resquest.files
+            .add(await http.MultipartFile.fromPath('videoUrl', camp.videoUrl));
 
-    final response = await http.post(Uri.parse('https://titwi.in/api/Camp'),
-        headers: {
-          "Authorization": "Bearer $token",
-          "Accept": "*/*",
-          "Content-Type": "application/json"
-        },
-        body: jsonEncode(camp.toJson()));
-    // final url = Uri.parse('https://titwi.in/api/Camp');
-    // final resquest = http.MultipartRequest('POST', url);
-    // resquest.headers.addAll({
-    //   "Authorization": "Bearer $token","Content-Type": "application/json"
-    // });
+        response = await resquest.send();
+      }
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        if (kDebugMode) {
+          myToast(context, "Error: ${response.statusCode}");
+        }
+        return false;
+      }
+    } catch (e) {
+      myToast(context, e.toString());
+      return false;
+    }
+  }
 
-    // resquest.fields.addAll({
-    //   "campId": 20.toString(),
-    //   "campName": "jah",
-    //   "campLocation": "kana",
-    //   "campFee": 139.toString(),
-    //   "campImageGroupId": 1.toString(),
-    //   "campBrochure": "j",
-    //   "campViewDetails": "beach ",
-    //   "campPlanId": 1.toString(),
-    //   "discountStatus": "5%OFF",
-    //   "controllerName": "shivangi ",
-    //   "isActive": 0.toString(),
-    //   "type": 1.toString()
-    // });
-    // resquest.files
-    //     .add(await http.MultipartFile.fromPath('image', camp.titleImageUrl));
-    // resquest.files
-    //     .add(await http.MultipartFile.fromPath('image', camp.videoUrl));
-
-    // final response = await resquest.send();
+//editing camp
+  static Future<bool> editCamp(context, Camp camp) async {
+    String token = await DbHelper.getToken();
+    final http.BaseResponse response;
+    final url = Uri.parse('https://PawnacampAppProd.titwi.in/api/Camp/add');
+    final resquest = http.MultipartRequest('PUT', url);
+    resquest.headers.addAll(
+        {"Authorization": "Bearer $token", "Content-Type": "application/json"});
+    resquest.fields.addAll(camp.toJson());
+    if (camp.videoUrl.isEmpty) {
+      if (!camp.titleImageUrl.contains('data')) {
+        resquest.files.add(await http.MultipartFile.fromPath(
+            'TitleImageUrl', camp.titleImageUrl));
+      }
+      response = await resquest.send();
+    } else {
+      resquest.files.add(await http.MultipartFile.fromPath(
+          'TitleImageUrl', camp.titleImageUrl));
+      if (camp.videoUrl.isNotEmpty) {
+        resquest.files
+            .add(await http.MultipartFile.fromPath('videoUrl', camp.videoUrl));
+      }
+      response = await resquest.send();
+    }
     if (response.statusCode == 200) {
       return true;
     } else {
       if (kDebugMode) {
-        final jsonResponse = jsonDecode(response.statusCode.toString());
-        print("Error:$jsonResponse");
+        myToast(context, "Error: ${response.statusCode}");
       }
       return false;
     }
   }
 
-  //camps detail by id
-  static Future<Map<String, dynamic>> fetchCampById(id) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = prefs.getString('token') ?? '';
+  //camps by name with lazy loading
+  static Future<Map<String, dynamic>> fetchCampBySearchName(campName) async {
+    String token = await DbHelper.getToken();
+    int id = await DbHelper.getId();
+    final response = await http.get(
+        Uri.parse(
+            'https://PawnacampAppProd.titwi.in/api/camp/$id/$campName/1/10'),
+        headers: {"Authorization": "Bearer $token", "Accept": "*/*"});
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
 
-    final response = await http.get(Uri.parse('https://titwi.in/api/camp/$id'),
+      return jsonResponse;
+    } else {
+      if (kDebugMode) {
+        print("Error");
+        print(response.body);
+      }
+      return {};
+    }
+  }
+
+  //camps detail by id
+  static Future<Map<String, dynamic>> fetchCampById(campId) async {
+    String token = await DbHelper.getToken();
+    int id = await DbHelper.getId();
+    final response = await http.get(
+        Uri.parse('https://PawnacampAppProd.titwi.in/api/camp/$id/$campId'),
         headers: {"Authorization": "Bearer $token", "Accept": "*/*"});
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
@@ -270,13 +336,48 @@ class ApiService {
     }
   }
 
-  //add vendor
-  static Future<bool> addVendor(Vendor vendor) async {
+//add users by admin
+  static Future<bool> addUser(
+      context, username, id, email, role, password) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String token = prefs.getString('token') ?? '';
-    prefs.setBool('isRegister', true);
 
-    final response = await http.post(Uri.parse('https://titwi.in/api/vendor'),
+    final response = await http.post(
+        Uri.parse('https://PawnacampAppProd.titwi.in/api/credpass'),
+        headers: {
+          "Authorization": "Bearer $token",
+          "Accept": "*/*",
+          "Content-Type": "application/json"
+        },
+        body: jsonEncode({
+          "id": id,
+          "userName": username,
+          "passCred": password,
+          "rolesid": role,
+          "email": email
+        }));
+
+    if (response.statusCode == 200) {
+      if (kDebugMode) {
+        print(response.body);
+      }
+      return true;
+    } else {
+      if (kDebugMode) {
+        print(response.body);
+      }
+      myToast(context, response.body.toString());
+      return false;
+    }
+  }
+
+  //add vendor
+  static Future<bool> addVendor(context, Vendor vendor) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('token') ?? '';
+
+    final response = await http.post(
+        Uri.parse('https://PawnacampAppProd.titwi.in/api/vendor/add'),
         headers: {
           "Authorization": "Bearer $token",
           "Content-Type": "application/json"
@@ -286,7 +387,29 @@ class ApiService {
       return true;
     } else {
       if (kDebugMode) {
-        print(response.body);
+        myToast(context, "Error: ${response.statusCode}");
+      }
+      return false;
+    }
+  }
+
+  //add vendor
+  static Future<bool> updateVendor(context, Vendor vendor) async {
+    String token = await DbHelper.getToken();
+    // print(vendor.ownerName);
+    final response = await http.put(
+        Uri.parse(
+            'https://PawnacampAppProd.titwi.in/api/vendor/${vendor.vendorid}'),
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json"
+        },
+        body: jsonEncode(vendor.toJson()));
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      if (kDebugMode) {
+        myToast(context, "Error: ${response.statusCode}");
       }
       return false;
     }
@@ -299,7 +422,8 @@ class ApiService {
     String token = prefs.getString('token') ?? '';
 
     final response = await http.get(
-        Uri.parse('https://titwi.in/api/vendor/$page/$noOfPage'),
+        Uri.parse(
+            'https://PawnacampAppProd.titwi.in/api/vendor/$page/$noOfPage'),
         headers: {"Authorization": "Bearer $token", "Accept": "*/*"});
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
@@ -318,7 +442,7 @@ class ApiService {
     String token = prefs.getString('token') ?? '';
 
     final response = await http.get(
-        Uri.parse('https://titwi.in/api/vendor/$id'),
+        Uri.parse('https://PawnacampAppProd.titwi.in/api/vendor/$id'),
         headers: {"Authorization": "Bearer $token", "Accept": "*/*"});
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
@@ -328,6 +452,25 @@ class ApiService {
         print("Error");
       }
       return {};
+    }
+  }
+
+  //fetch Vendor detail by vendor id
+  static Future<bool> venderExists(id) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('token') ?? '';
+
+    final response = await http.get(
+        Uri.parse(
+            'https://PawnacampAppProd.titwi.in/api/vendor/vendorExist/${id}'),
+        headers: {"Authorization": "Bearer $token", "Accept": "*/*"});
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      if (kDebugMode) {
+        print("Error");
+      }
+      return false;
     }
   }
 
@@ -337,7 +480,7 @@ class ApiService {
     String token = prefs.getString('token') ?? '';
 
     final response = await http.get(
-        Uri.parse('https://titwi.in/api/vendor/$id'),
+        Uri.parse('https://PawnacampAppProd.titwi.in/api/vendor/$id'),
         headers: {"Authorization": "Bearer $token", "Accept": "*/*"});
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
@@ -350,7 +493,22 @@ class ApiService {
     }
   }
 
-  //
+  static Future<List<dynamic>> fetchUsers() async {
+    String token = await DbHelper.getToken();
+    final response = await http.get(
+        Uri.parse(
+            'https://PawnacampAppProd.titwi.in/api/credpass/FetchAllUser'),
+        headers: {"Authorization": "Bearer $token", "Accept": "*/*"});
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return jsonResponse;
+    } else {
+      if (kDebugMode) {
+        print(response.body);
+      }
+      return [];
+    }
+  }
 
   //logoutA
   static logout(context) async {
@@ -360,11 +518,12 @@ class ApiService {
   }
 
   //check token expire or not
-  static Future<void> checkToken(context) async {
+  static Future<bool> checkToken(context) async {
     SharedPreferences sf = await SharedPreferences.getInstance();
     String token = sf.getString('token') ?? '';
     if (JwtDecoder.isExpired(token)) {
-      nextReplacement(context, const LoginPage());
+      return true;
     }
+    return false;
   }
 }

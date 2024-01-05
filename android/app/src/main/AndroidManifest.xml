@@ -22,7 +22,7 @@
   </intent>
 </queries>
    <application
-        android:label="camp_booking"
+        android:label="Pawna Camp"
         android:name="${applicationName}"
         android:requestLegacyExternalStorage="true"
         android:icon="@mipmap/ic_launcher">

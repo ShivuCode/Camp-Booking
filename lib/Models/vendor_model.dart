@@ -10,6 +10,7 @@ class Vendor {
   String email;
   String address;
   String ownerName;
+  String location;
 
   Vendor({
     required this.vendorid,
@@ -21,6 +22,7 @@ class Vendor {
     required this.email,
     required this.address,
     required this.ownerName,
+    required this.location,
   });
 
   Map<String, dynamic> toJson() {
@@ -34,20 +36,22 @@ class Vendor {
       'Email': email,
       'Address': address,
       'OwnerName': ownerName,
+      'location': location,
     };
   }
 
   factory Vendor.fromJson(Map<String, dynamic> json) {
     return Vendor(
-      vendorid: json['Vendorid'],
-      userId: json['UserId'],
-      organizationName: json['OrganizationName'],
-      gst: json['GST'],
-      website: json['Website'],
-      mobile: json['Mobile'],
-      email: json['Email'],
-      address: json['Address'],
-      ownerName: json['OwnerName'],
+      vendorid: json['vendorId'] ?? 0,
+      userId: json['userId'] ?? 0,
+      organizationName: json['organizationName'] ?? '',
+      gst: json['gst'] ?? '',
+      website: json['website'] ?? '',
+      mobile: json['mobile'] ?? '',
+      email: json['email'] ?? '',
+      address: json['address'] ?? '',
+      ownerName: json['ownerName'] ?? '',
+      location: json['location'] ?? '',
     );
   }
 

@@ -1,9 +1,10 @@
 import 'package:camp_booking/Responsive_Layout/responsive_layout.dart';
 import 'package:camp_booking/Pages/LOGIN/loginPage.dart';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'package:jwt_decoder/jwt_decoder.dart';
+// ignore: depend_on_referenced_packages
 import 'package:shared_preferences/shared_preferences.dart';
 import 'Pages/HOME/laptopHomeScreen.dart';
 import 'Pages/HOME/mobileHomeScreen.dart';
@@ -19,14 +20,14 @@ void main() async {
       ),
     );
   };
-  ThemeData(primaryColor: Colors.white);
-  const SystemUiOverlayStyle(
-      statusBarColor: Colors.white,
-      systemNavigationBarColor: Colors.white,
-      statusBarBrightness: Brightness.dark,
-      systemNavigationBarIconBrightness: Brightness.dark);
 
-  runApp(const MyApp());
+  runApp(
+    MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(primaryColor: Colors.white),
+      home: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -50,29 +51,21 @@ class MyApp extends StatelessWidget {
       builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           // Show a loading indicator while checking the login status
-          return const MaterialApp(
-            debugShowCheckedModeBanner: false,
-            home: Scaffold(
-              body: Center(
-                child: CircularProgressIndicator(),
-              ),
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
             ),
           );
         } else {
           if (snapshot.hasData && snapshot.data!) {
             // User is already logged in, redirect to BookingPage
-            return MaterialApp(
-                debugShowCheckedModeBanner: false,
-                home: ResponsiveLayout(
-                    mobileScaffold: MobileHomeScreen(),
-                    tabletScaffold: TabletHomeScreen(),
-                    laptopScaffold: LaptopHomeScreen()));
+            return ResponsiveLayout(
+                mobileScaffold: MobileHomeScreen(),
+                tabletScaffold: TabletHomeScreen(),
+                laptopScaffold: LaptopHomeScreen());
           } else {
             // User is not logged in, show the login page
-            return const MaterialApp(
-              debugShowCheckedModeBanner: false,
-              home: LoginPage(),
-            );
+            return const LoginPage();
           }
         }
       },

@@ -18,7 +18,7 @@ class _ReportState extends State<Report> {
   String _toDate = '';
   int page = 1;
   bool stop = false;
-  List<Customer> customers = [];
+
   List<Customer> filterData = [];
   final ScrollController _scrollControler = ScrollController();
 
@@ -27,7 +27,7 @@ class _ReportState extends State<Report> {
       stop = false;
       filterData = [];
 
-      final data = await ApiService.findByFromToDate(_formDate, _toDate, page);
+      final data = await ApiService.findByFromToDate(_formDate, _toDate, page,context);
       if (data.isNotEmpty) {
         for (var element in data) {
           setState(() {
@@ -39,7 +39,7 @@ class _ReportState extends State<Report> {
         page = 1;
       }
     } else {
-      final data = await ApiService.fetchDataPage(page, 14);
+      final data = await ApiService.fetchDataPage(page, 17, context);
       if (data.isNotEmpty) {
         for (var element in data['items']) {
           setState(() {
@@ -78,49 +78,46 @@ class _ReportState extends State<Report> {
               barrierDismissible: false,
               context: context,
               builder: (_) => AlertDialog(
+                    title: const Text(
+                      "Which Type File you want to download? ",
+                    ),
                     content: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text("Download file in Excel"),
+                        const Text("Download file in Excel",
+                            style: TextStyle(fontSize: 10)),
                         height(5),
                         ElevatedButton(
                             style: ButtonStyle(
                                 minimumSize: MaterialStateProperty.all(
-                                    const Size(120, 40)),
+                                    const Size(100, 36)),
                                 backgroundColor:
                                     MaterialStateProperty.all(mainColor)),
                             onPressed: () {
-                              Export.excel(customers);
+                              Export.excel(filterData);
                             },
                             child: const Text("Download")),
                         height(15),
-                        const Text("Download file in Pdf"),
+                        const Text("Download file in Pdf",
+                            style: TextStyle(fontSize: 10)),
                         height(5),
                         ElevatedButton(
                             style: ButtonStyle(
                                 minimumSize: MaterialStateProperty.all(
-                                    const Size(120, 40)),
+                                    const Size(100, 36)),
                                 backgroundColor:
                                     MaterialStateProperty.all(mainColor)),
                             onPressed: () {
-                              Export.pdf(customers);
+                              Export.pdf(filterData);
                             },
                             child: const Text("Download"))
                       ],
                     ),
                     actions: [
                       TextButton(
-                          style: ButtonStyle(
-                              foregroundColor:
-                                  MaterialStateProperty.all(mainColor),
-                              minimumSize:
-                                  MaterialStateProperty.all(const Size(80, 36)),
-                              shape: MaterialStateProperty.all(
-                                  const RoundedRectangleBorder(
-                                      side: BorderSide(color: mainColor)))),
                           onPressed: () => Navigator.pop(context),
-                          child: const Text("Close"))
+                          child: const Text("Cancel"))
                     ],
                   ));
         },
@@ -298,8 +295,10 @@ class _ReportState extends State<Report> {
       "Booking Date",
       "Adults",
       "Childs",
+      "FreeKid",
       "Veg Count",
       "Non-veg Count",
+      "Discount",
       "Fee",
       "Total",
       "Advance",
@@ -327,20 +326,23 @@ class _ReportState extends State<Report> {
               DataCell(text(filterData[index].bookingDate.split('T').first)),
               DataCell(text(filterData[index].adult.toString())),
               DataCell(text(filterData[index].child.toString())),
+              DataCell(text(filterData[index].freeKid.toString())),
               DataCell(text(filterData[index].vegPeopleCount.toString())),
               DataCell(text(filterData[index].nonVegPeopleCount.toString())),
+              DataCell(text(filterData[index].discount.toString())),
               DataCell(text(filterData[index].price.toString())),
               DataCell(text(
                   ((filterData[index].price * filterData[index].adult) +
-                          ((filterData[index].price * 0.45) *
+                          ((filterData[index].price * 0.5) *
                               filterData[index].child))
                       .toString())),
               DataCell(text(filterData[index].advAmt.toString())),
               DataCell(text(
                   (((filterData[index].price * filterData[index].adult) +
-                              ((filterData[index].price * 0.45) *
+                              ((filterData[index].price * 0.5) *
                                   filterData[index].child)) -
-                          filterData[index].advAmt)
+                          filterData[index].advAmt -
+                          filterData[index].discount)
                       .toString()))
             ]));
   }

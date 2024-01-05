@@ -31,24 +31,19 @@ dependencies:
   flutter:
     sdk: flutter
 
-
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
- 
   http: 
-  shared_preferences: ^2.1.0
-  jwt_decoder: ^2.0.1
-  open_file: ^3.3.1
+  shared_preferences:
+  jwt_decoder: 
+  open_file:
   flutter_pdfview:
   share_plus:
   mailer:
   fluttertoast:
   intl:
-  #pdf dependency
   pdf:
   permission_handler:
   url_launcher:
-  file_picker:
+  file_picker: ^5.3.3
   device_info_plus:
   video_thumbnail: 
   scratcher:
@@ -56,6 +51,11 @@ dependencies:
   font_awesome_flutter:
   whatsapp: 
   pay:
+  awesome_notifications: any
+  velocity_x: ^4.1.1
+  dropdown_search: ^2.0.0
+
+
 
 
 
